@@ -25,6 +25,8 @@ class AppStyles {
 
   static TextStyle bold20Primary = GoogleFonts.inter(
       fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryLight);
+  static TextStyle bold20White = GoogleFonts.inter(
+      fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.whiteColor);
   static TextStyle bold20Black = GoogleFonts.inter(
       fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.blackColor);
 
@@ -51,4 +53,5 @@ class AppStyles {
   static TextStyle medium20Primary = GoogleFonts.inter(
       fontSize: 20, fontWeight: FontWeight.w500, color: AppColors.primaryLight);
 }
+
 
