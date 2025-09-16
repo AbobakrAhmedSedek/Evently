@@ -8,5 +8,4 @@ class AssetsRes {
 
   static const String PROJECT_NAME = 'evently';
   static const String PROJECT_VERSION = '1.0.0+1';
-  static const String ICON_HOME = 'assets/icon_home.png';
 }
