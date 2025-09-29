@@ -1,5 +1,8 @@
 import 'package:evently/providers/language_provider.dart';
 import 'package:evently/providers/theme_provider.dart';
+import 'package:evently/ui/authentication/login/login_screen.dart';
+import 'package:evently/ui/authentication/register_screen/register_screen.dart';
+import 'package:evently/ui/home/add_event.dart';
 import 'package:evently/ui/home/home_screen.dart';
 import 'package:evently/utils/app_theme.dart';
 
@@ -29,8 +32,14 @@ class MyApp extends StatelessWidget {
     var themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {'/': (context) =>  HomeScreen()},
+      initialRoute: LoginScreen.routeName,
+      routes: {
+        '/': (context) =>  HomeScreen(),
+          AddEvent.routeName : (context) =>  AddEvent(),
+          LoginScreen.routeName : (context) =>  LoginScreen(),
+          RegisterScreen.routeName : (context) =>  RegisterScreen(),
+
+      },
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: languageProvider.currentLocale,

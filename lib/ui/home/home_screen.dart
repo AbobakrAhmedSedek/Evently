@@ -4,6 +4,7 @@ import 'package:evently/ui/home/tabs/favorite_tab/favorite_tab.dart';
 import 'package:evently/ui/home/tabs/home_tab/home_tab.dart';
 import 'package:evently/ui/home/tabs/map_tab/map_tab.dart';
 import 'package:evently/ui/home/tabs/profile_tab/profile_tab.dart'; // ✅ تعديل هنا
+import 'package:evently/ui/home/add_event.dart';
 import 'package:evently/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -210,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(32.5),
           onTap: () {
-            // إضافة الإجراء المطلوب
+            Navigator.of(context).pushNamed(AddEvent.routeName);
           },
           child: Icon(
             Icons.add,
