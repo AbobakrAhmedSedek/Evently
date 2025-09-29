@@ -1,24 +1,35 @@
-import 'package:evently/utils/app_styles.dart';
 import 'package:flutter/material.dart';
-import '../../../../../utils/app_colors.dart';
 
 class EventTabItemWidget extends StatelessWidget {
   final String eventName;
   final bool isSelected;
   final IconData iconData;
+  final Color selectedBackgroundColor;
+  final Color unselectedBackgroundColor;
+  final Color borderColor;
+  final Color selectedIconColor;
+  final Color unselectedIconColor;
+  final TextStyle unselectedTextStyle;
+  final TextStyle selectedTextStyle;
 
   const EventTabItemWidget({
     super.key,
     required this.iconData,
     required this.eventName,
     required this.isSelected,
+    required this.selectedBackgroundColor,
+    required this.unselectedBackgroundColor,
+    required this.selectedIconColor,
+    required this.unselectedTextStyle,
+    required this.unselectedIconColor,
+    required this.selectedTextStyle,
+    required this.borderColor,
   });
 
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -27,17 +38,8 @@ class EventTabItemWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(46),
-        color: isDark
-            ? isSelected
-            ? AppColors.primaryLight
-            : Colors.transparent
-            : isSelected
-            ? AppColors.whiteColor
-            : Colors.transparent,
-        border: Border.all(
-          color: isDark ? AppColors.primaryLight : AppColors.whiteColor,
-          width: 2,
-        ),
+        color: isSelected ? selectedBackgroundColor : unselectedBackgroundColor,
+        border: Border.all(color: borderColor, width: 2),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -45,20 +47,15 @@ class EventTabItemWidget extends StatelessWidget {
           Icon(
             iconData,
             size: 18,
-            color: isDark
-                ? Colors.white
-                : isSelected
-                ? AppColors.primaryLight
-                : Colors.white,
+            color: isSelected ? selectedIconColor : unselectedIconColor,
           ),
           const SizedBox(width: 6),
           Text(
             eventName,
-            style: isDark
-                ? AppStyles.medium16White
-                : isSelected
-                ? AppStyles.medium16Primary
-                : AppStyles.medium16White,
+            style:
+                isSelected
+                    ? selectedTextStyle
+                    : unselectedTextStyle,
           ),
         ],
       ),

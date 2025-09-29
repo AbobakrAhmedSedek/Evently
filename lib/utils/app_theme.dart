@@ -11,7 +11,10 @@ class AppTheme {
       unselectedLabelStyle: AppStyles.bold16White,
       selectedLabelStyle: AppStyles.bold16White,
     ),
+ appBarTheme: AppBarTheme(
+      iconTheme: IconThemeData(color: AppColors.primaryLight),
 
+    ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: AppColors.primaryLight,
       shape: StadiumBorder(

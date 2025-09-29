@@ -23,7 +23,7 @@
   "password" : "Password",
   "name" : "Name",
   "re_password" : "Re Password",
-  "already_have_account" : "Already Have Account",
+  "already_have_account" : "Already Have Account?",
   "sport" : "Sport",
   "birthday" : "Birthday",
   "meeting" : "Meeting",
@@ -45,7 +45,12 @@
   "choose_date" : "Choose Date",
   "choose_time" : "Choose Time",
   "location" : "Location",
+  "update_event" : "Update Event",
   "choose_event_location" : "Choose Event Location",
   "search_event" : "Search For Event",
-  "no_events_found" : "No Events Found Yet"
+  "no_events_found" : "No Events Found Yet",
+  "please_enter_event_title": " please enter event title ",
+  "please_enter_event_description": "please enter event description"
+
+
 }

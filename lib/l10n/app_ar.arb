@@ -23,7 +23,7 @@
   "password": "كلمة المرور",
   "name": "الاسم",
   "re_password": "تأكيد كلمة المرور",
-  "already_have_account": "لديك حساب بالفعل",
+  "already_have_account": "لديك حساب بالفعل؟",
   "sport": "رياضة",
   "birthday": "عيد ميلاد",
   "meeting": "اجتماع",
@@ -45,7 +45,11 @@
   "choose_date": "اختر التاريخ",
   "choose_time": "اختر الوقت",
   "location": "الموقع",
+  "update_event": "رفع الحدث",
   "choose_event_location": "اختر موقع الفعالية",
   "search_event": "البحث عن فعالية",
-  "no_events_found": "لم يتم العثور على فعاليات بعد"
+  "no_events_found": "لم يتم العثور على فعاليات بعد",
+  "please_enter_event_title": "من فضلك , ادخل عنوان الفعالية.",
+  "please_enter_event_description": "من فضلك , ادخل وصف الفعالية."
+
 }

@@ -1,5 +1,6 @@
 import 'package:evently/ui/home/tabs/home_tab/widgets/event_item.dart';
 import 'package:evently/ui/home/tabs/home_tab/widgets/event_tab_item_widget.dart';
+import 'package:evently/utils/app_colors.dart';
 import 'package:evently/utils/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -19,24 +20,49 @@ class _HomeTabState extends State<HomeTab> {
   int selectedIndex = 0;
   late List<EventData> eventsDataList;
 
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-      eventsDataList = [
-        EventData(name: AppLocalizations.of(context)!.all, icon: Bootstrap.house),
-        EventData(name: AppLocalizations.of(context)!.sport, icon: FontAwesome.futbol_solid),
-        EventData(name: AppLocalizations.of(context)!.birthday, icon: Iconsax.cake_bold),
-        EventData(name: AppLocalizations.of(context)!.meeting, icon: EvaIcons.people),
-        EventData(name: AppLocalizations.of(context)!.gaming, icon: Bootstrap.controller),
-        EventData(name: AppLocalizations.of(context)!.workshop, icon: LineAwesome.toolbox_solid),
-        EventData(name: AppLocalizations.of(context)!.book_club, icon: MingCute.book_2_fill),
-        EventData(name: AppLocalizations.of(context)!.exhibition, icon: Clarity.picture_line),
-        EventData(name: AppLocalizations.of(context)!.holiday, icon:  LineAwesome. hotel_solid),
-        EventData(name: AppLocalizations.of(context)!.eating, icon: IonIcons.fast_food),
-      ];
-
+    eventsDataList = [
+      EventData(name: AppLocalizations.of(context)!.all, icon: Bootstrap.house),
+      EventData(
+        name: AppLocalizations.of(context)!.sport,
+        icon: FontAwesome.futbol_solid,
+      ),
+      EventData(
+        name: AppLocalizations.of(context)!.birthday,
+        icon: Iconsax.cake_bold,
+      ),
+      EventData(
+        name: AppLocalizations.of(context)!.meeting,
+        icon: EvaIcons.people,
+      ),
+      EventData(
+        name: AppLocalizations.of(context)!.gaming,
+        icon: Bootstrap.controller,
+      ),
+      EventData(
+        name: AppLocalizations.of(context)!.workshop,
+        icon: LineAwesome.toolbox_solid,
+      ),
+      EventData(
+        name: AppLocalizations.of(context)!.book_club,
+        icon: MingCute.book_2_fill,
+      ),
+      EventData(
+        name: AppLocalizations.of(context)!.exhibition,
+        icon: Clarity.picture_line,
+      ),
+      EventData(
+        name: AppLocalizations.of(context)!.holiday,
+        icon: LineAwesome.hotel_solid,
+      ),
+      EventData(
+        name: AppLocalizations.of(context)!.eating,
+        icon: IonIcons.fast_food,
+      ),
+    ];
   }
 
   @override
@@ -102,25 +128,35 @@ class _HomeTabState extends State<HomeTab> {
                 DefaultTabController(
                   length: eventsDataList.length,
                   child: TabBar(
+                      
                     onTap: (index) {
                       setState(() => selectedIndex = index);
                     },
-                    labelPadding: EdgeInsets.symmetric(horizontal: width * 0.01),
+                    labelPadding: EdgeInsets.symmetric(
+                      horizontal: width * 0.01,
+                    ),
                     tabAlignment: TabAlignment.start,
                     indicatorColor: Colors.transparent,
+                       
                     dividerColor: Colors.transparent,
                     isScrollable: true,
-                    tabs: eventsDataList.asMap().entries.map(
-                          (entry) {
-                        final idx = entry.key;
-                        final event = entry.value;
-                        return EventTabItemWidget(
-                          eventName: event.name,
-                          iconData: event.icon,
-                          isSelected: idx == selectedIndex,
-                        );
-                      },
-                    ).toList(),
+                    tabs:
+                        eventsDataList.asMap().entries.map((entry) {
+                          final idx = entry.key;
+                          final event = entry.value;
+                          return EventTabItemWidget(
+                            eventName: event.name,
+                            iconData: event.icon,
+                            isSelected: idx == selectedIndex,
+                            selectedBackgroundColor: AppColors.whiteColor,
+                            unselectedBackgroundColor: AppColors.transparentColor,
+                            selectedIconColor:AppColors.primaryLight,
+                            unselectedIconColor: AppColors.whiteColor,
+                            selectedTextStyle: AppStyles.bold16Primary,
+                            unselectedTextStyle:AppStyles.bold16White ,
+                            borderColor: AppColors.whiteColor ,
+                          );
+                        }).toList(),
                   ),
                 ),
               ],
