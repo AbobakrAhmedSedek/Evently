@@ -50,6 +50,10 @@
   "search_event": "البحث عن فعالية",
   "no_events_found": "لم يتم العثور على فعاليات بعد",
   "please_enter_event_title": "من فضلك , ادخل عنوان الفعالية.",
-  "please_enter_event_description": "من فضلك , ادخل وصف الفعالية."
+  "please_enter_event_description": "من فضلك , ادخل وصف الفعالية.",
+  "error_occurred": "حدث خطأ أثناء إضافة الحدث",
+  "event_added_successfully": "تمت إضافة الفعالية بنجاح",
+  "added_to_favorites": "تمت إضافته إلى المفضلة",
+  "removed_from_favorites": "تمت إزالته من المفضلة"
 
 }

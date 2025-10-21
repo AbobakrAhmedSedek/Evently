@@ -1,11 +1,12 @@
-
 //todo:  new code
+import 'package:evently/providers/event_list_provider.dart';
+import 'package:evently/ui/home/tabs/home_tab/widgets/event_item.dart';
 import 'package:evently/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:evently/utils/assets_manager.dart';
 import 'package:evently/utils/app_styles.dart';
-import 'package:evently/ui/home/tabs/home_tab/widgets/event_item.dart';
+import 'package:provider/provider.dart';
 
 class FavoriteTab extends StatefulWidget {
   const FavoriteTab({super.key});
@@ -21,7 +22,10 @@ class _FavoriteTabState extends State<FavoriteTab> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-
+    var eventListProvider = Provider.of<EventListProvider>(context);
+    if (eventListProvider.favoriteEventsList.isEmpty) {
+      eventListProvider.getAllfavoriteEvents();
+        }
     return Scaffold(
       body: SafeArea(
         child: Scrollbar(
@@ -40,12 +44,18 @@ class _FavoriteTabState extends State<FavoriteTab> {
                   minHeight: 70,
                   maxHeight: 70,
                   child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     margin: EdgeInsets.symmetric(
-                        horizontal: width * 0.05, vertical: 6),
+                      horizontal: width * 0.05,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withOpacity(0.9), // ✅ شبه شفاف
+                      color: AppColors.primaryLight.withOpacity(
+                        0.9,
+                      ), // ✅ شبه شفاف
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -75,18 +85,29 @@ class _FavoriteTabState extends State<FavoriteTab> {
                 ),
               ),
 
-              SliverToBoxAdapter(
-                child: SizedBox(height: height * 0.01),
-              ),
-
+              SliverToBoxAdapter(child: SizedBox(height: height * 0.01)),
 
               SliverList(
-                delegate:  SliverChildBuilderDelegate(
-                      (context, index) {
-                    return const EventItem();
-                  },
-                  childCount: 5,
-                ),
+                delegate:
+                    eventListProvider.favoriteEventsList.isEmpty
+                        ? SliverChildListDelegate([
+                          Center(
+                            child: Text(
+                              AppLocalizations.of(context)!.no_events_found,
+                              style: AppStyles.bold20Primary,
+                            ),
+                          ),
+                        ])
+                        : SliverChildBuilderDelegate(
+                          (context, index) {
+                            return EventItem(
+                              event:
+                                  eventListProvider.favoriteEventsList[index],
+                            );
+                          },
+                          childCount:
+                              eventListProvider.favoriteEventsList.length,
+                        ),
               ),
             ],
           ),
@@ -115,7 +136,10 @@ class _SearchHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return child;
   }
 
@@ -126,8 +150,6 @@ class _SearchHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.child != child;
   }
 }
-
-
 
 //todo:  old code
 // import 'package:evently/utils/app_colors.dart';
