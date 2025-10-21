@@ -24,7 +24,9 @@ class CustomElevatedButton extends StatelessWidget {
           vertical: height * 0.015,
         ),
       ),
-      onPressed: () {},
+      onPressed: () {
+        onButtonClick();
+      },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

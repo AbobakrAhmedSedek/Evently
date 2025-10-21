@@ -62,6 +62,7 @@ class LoginScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
+                        
                       AppLocalizations.of(context)!.do_not_have_an_account,
                       style: AppStyles.medium16Black,
                     ),
@@ -79,6 +80,7 @@ class LoginScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Divider(
+                            
                         thickness: 2,
                         color: AppColors.primaryLight,
                         indent: width * 0.02,
@@ -100,7 +102,7 @@ class LoginScreen extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: height * 0.03),
-
+ 
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
@@ -117,6 +119,7 @@ class LoginScreen extends StatelessWidget {
                       SizedBox(width: width * 0.04),
 
                       Text(
+                        
                         AppLocalizations.of(context)!.login_with_google,
                         style: AppStyles.medium20Primary,
                       ),
