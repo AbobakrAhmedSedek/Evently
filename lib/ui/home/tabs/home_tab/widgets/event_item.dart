@@ -1,11 +1,16 @@
+import 'package:evently/model/event.dart';
+import 'package:evently/providers/event_list_provider.dart';
 import 'package:evently/utils/app_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../../utils/app_colors.dart';
 import '../../../../../utils/assets_manager.dart';
 
 class EventItem extends StatelessWidget {
-  const EventItem({super.key});
+  final Event event;
+  const EventItem({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +27,7 @@ class EventItem extends StatelessWidget {
         border: Border.all(color: AppColors.primaryLight),
         borderRadius: BorderRadius.circular(20),
         image: DecorationImage(
-          image: AssetImage(AssetsManager.birthdayImage),
+          image: AssetImage( event.image),
           fit: BoxFit.cover,
         ),
       ),
@@ -40,8 +45,8 @@ class EventItem extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text("22", style: AppStyles.bold20Primary),
-                Text("Nov", style: AppStyles.bold16Primary),
+                Text(event.date.day.toString(), style: AppStyles.bold20Primary),
+                Text(DateFormat.MMM().format(event.date), style: AppStyles.bold16Primary),
               ],
             ),
           ),
@@ -61,15 +66,21 @@ class EventItem extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    "This is a Birthday Party  ",
+                    event.title,
                     style: AppStyles.bold14Black,
                   ),
                 ),
                 Spacer(),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                  
+                    Provider.of<EventListProvider>(context, listen: false)
+                        .updateIsFavoriteEvents(event, context);
+                  },
                   icon: Image.asset(
-                    AssetsManager.iconFavoriteSelected,
+                    event.isFavorite == true
+                        ? AssetsManager.iconFavoriteSelected
+                        : AssetsManager.iconFavorite,
                     color: AppColors.primaryLight,
                     width: 30,
                     height: 30,

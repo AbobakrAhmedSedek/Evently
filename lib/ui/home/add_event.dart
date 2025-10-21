@@ -1,15 +1,18 @@
-import 'package:evently/ui/home/tabs/home_tab/models/event_data_model.dart';
+import 'package:evently/model/event.dart';
+import 'package:evently/providers/event_list_provider.dart';
 import 'package:evently/ui/home/tabs/home_tab/widgets/event_tab_item_widget.dart';
 import 'package:evently/ui/widgets/custom_elevated_button.dart';
 import 'package:evently/ui/widgets/custom_text_field.dart';
 import 'package:evently/ui/widgets/event_date_or_time.dart';
 import 'package:evently/utils/app_colors.dart';
+import 'package:evently/utils/firebase_utils.dart';
+import 'package:evently/utils/toast_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:evently/utils/app_styles.dart';
 import 'package:evently/utils/assets_manager.dart';
-import 'package:icons_plus/icons_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class AddEvent extends StatefulWidget {
   static const routeName = '/add_event';
@@ -35,56 +38,34 @@ class _AddEventState extends State<AddEvent> {
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
+  String? formatTime;
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  late EventListProvider eventListProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    // تهيئة قائمة الأحداث عند فتح الشاشة
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      eventListProvider = Provider.of<EventListProvider>(context, listen: false);
+      eventListProvider.getEventsDataList(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
+    eventListProvider = Provider.of<EventListProvider>(context);
+    final eventsDataList = eventListProvider.eventsDataList;
 
-    final List<EventData> eventsDataList = [
-      EventData(
-        name: AppLocalizations.of(context)!.sport,
-        icon: FontAwesome.futbol_solid,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.birthday,
-        icon: Iconsax.cake_bold,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.meeting,
-        icon: EvaIcons.people,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.gaming,
-        icon: Bootstrap.controller,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.workshop,
-        icon: LineAwesome.toolbox_solid,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.book_club,
-        icon: MingCute.book_2_fill,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.exhibition,
-        icon: Clarity.picture_line,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.holiday,
-        icon: LineAwesome.hotel_solid,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.eating,
-        icon: IonIcons.fast_food,
-      ),
-    ];
-
-    final String selectedImage = imageSelectedEventList[selectedIndex];
+    // تأكد من أن القائمة ليست فارغة قبل استخدام selectedIndex
+    final String selectedImage = selectedIndex < imageSelectedEventList.length
+        ? imageSelectedEventList[selectedIndex]
+        : imageSelectedEventList[0];
 
     return Scaffold(
       appBar: AppBar(
@@ -108,37 +89,41 @@ class _AddEventState extends State<AddEvent> {
                 child: Image.asset(selectedImage),
               ),
               SizedBox(height: height * 0.02),
-              SizedBox(
-                height: height * 0.06,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: eventsDataList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                      },
-                      child: EventTabItemWidget(
-                        iconData: eventsDataList[index].icon,
-                        eventName: eventsDataList[index].name,
-                        isSelected: selectedIndex == index,
-                        selectedBackgroundColor: AppColors.primaryLight,
-                        unselectedBackgroundColor: Colors.transparent,
-                        borderColor: AppColors.primaryLight,
-                        selectedIconColor: AppColors.whiteColor,
-                        unselectedIconColor: AppColors.primaryLight,
-                        selectedTextStyle: AppStyles.bold16White,
-                        unselectedTextStyle: AppStyles.bold16Primary,
-                      ),
-                    );
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    return SizedBox(width: width * 0.02);
-                  },
+              // تحقق من أن القائمة ليست فارغة قبل عرض ListView
+              if (eventsDataList.isNotEmpty)
+                SizedBox(
+                  height: height * 0.06,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: eventsDataList.length - 1, // نستثني "All" من القائمة
+                    itemBuilder: (BuildContext context, int index) {
+                      // نبدأ من index 1 لتجنب "All"
+                      int actualIndex = index + 1;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                          });
+                        },
+                        child: EventTabItemWidget(
+                          iconData: eventsDataList[actualIndex].icon,
+                          eventName: eventsDataList[actualIndex].name,
+                          isSelected: selectedIndex == index,
+                          selectedBackgroundColor: AppColors.primaryLight,
+                          unselectedBackgroundColor: Colors.transparent,
+                          borderColor: AppColors.primaryLight,
+                          selectedIconColor: AppColors.whiteColor,
+                          unselectedIconColor: AppColors.primaryLight,
+                          selectedTextStyle: AppStyles.bold16White,
+                          unselectedTextStyle: AppStyles.bold16Primary,
+                        ),
+                      );
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return SizedBox(width: width * 0.02);
+                    },
+                  ),
                 ),
-              ),
               SizedBox(height: height * 0.02),
               Form(
                 key: formKey,
@@ -173,7 +158,7 @@ class _AddEventState extends State<AddEvent> {
                       controller: descriptionController,
                       hintText: AppLocalizations.of(context)!.event_description,
                       maxLines: 4,
-                        validator: (text) {
+                      validator: (text) {
                         if (text!.isEmpty) {
                           return AppLocalizations.of(
                             context,
@@ -264,18 +249,69 @@ class _AddEventState extends State<AddEvent> {
     setState(() {});
   }
 
-  void chooseTime() async {
-    var chooseTime = await showTimePicker(
+  Future<void> chooseTime() async {
+    final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: selectedTime ?? TimeOfDay.now(),
     );
-    selectedTime = chooseTime;
-    setState(() {});
+    if (picked == null) return;
+    setState(() {
+      selectedTime = picked;
+      formatTime = picked.format(context);
+    });
   }
 
   void updateEvent() {
-    if(formKey.currentState?.validate()== true) {
- 
+    if (formKey.currentState?.validate() == true) {
+      // التحقق من أن selectedDate و selectedTime ليسا null
+      if (selectedDate == null) {
+        ToastUtils.showToast(
+          message: AppLocalizations.of(context)!.choose_date,
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
+      if (selectedTime == null || formatTime == null) {
+        ToastUtils.showToast(
+          message: AppLocalizations.of(context)!.choose_time,
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
+
+      // التحقق من أن القائمة ليست فارغة
+      if (eventListProvider.eventsDataList.isEmpty) {
+        ToastUtils.showToast(
+          message: "Error: Event categories not loaded",
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
+
+      // نستخدم selectedIndex + 1 لأننا استثنينا "All" من القائمة
+      int actualIndex = selectedIndex + 1;
+
+      Event event = Event(
+        category: eventListProvider.eventsDataList[actualIndex].categoryKey,
+        eventName: eventListProvider.eventsDataList[actualIndex].name,
+        image: imageSelectedEventList[selectedIndex],
+        description: descriptionController.text,
+        title: titleController.text,
+        date: selectedDate!,
+        time: formatTime!,
+      );
+
+      FirebaseUtils.addEvent(event).timeout(
+        Duration(milliseconds: 500),
+        onTimeout: () {
+          ToastUtils.showToast(
+            message: AppLocalizations.of(context)!.event_added_successfully,
+            backgroundColor: Colors.green,
+          );
+          eventListProvider.getAllEvents();
+          Navigator.pop(context);
+        },
+      );
     }
   }
 }

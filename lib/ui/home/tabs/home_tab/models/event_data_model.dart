@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 class EventData {
   final String name;
   final IconData icon;
+  final String categoryKey;
 
   const EventData({
     required this.name,
     required this.icon,
+    required this.categoryKey,
   });
 }

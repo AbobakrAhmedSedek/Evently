@@ -1,13 +1,14 @@
+import 'package:evently/providers/event_list_provider.dart';
+
 import 'package:evently/ui/home/tabs/home_tab/widgets/event_item.dart';
 import 'package:evently/ui/home/tabs/home_tab/widgets/event_tab_item_widget.dart';
 import 'package:evently/utils/app_colors.dart';
 import 'package:evently/utils/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:icons_plus/icons_plus.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../utils/assets_manager.dart';
-import 'models/event_data_model.dart'; // ✅ استدعاء الموديل
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -17,56 +18,28 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  int selectedIndex = 0;
-  late List<EventData> eventsDataList;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    eventsDataList = [
-      EventData(name: AppLocalizations.of(context)!.all, icon: Bootstrap.house),
-      EventData(
-        name: AppLocalizations.of(context)!.sport,
-        icon: FontAwesome.futbol_solid,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.birthday,
-        icon: Iconsax.cake_bold,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.meeting,
-        icon: EvaIcons.people,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.gaming,
-        icon: Bootstrap.controller,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.workshop,
-        icon: LineAwesome.toolbox_solid,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.book_club,
-        icon: MingCute.book_2_fill,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.exhibition,
-        icon: Clarity.picture_line,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.holiday,
-        icon: LineAwesome.hotel_solid,
-      ),
-      EventData(
-        name: AppLocalizations.of(context)!.eating,
-        icon: IonIcons.fast_food,
-      ),
-    ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      var eventListProvider = Provider.of<EventListProvider>(
+        context,
+        listen: false,
+      );
+
+      eventListProvider.getEventsDataList(context);
+
+      if (eventListProvider.eventsList.isEmpty) {
+        eventListProvider.getAllEvents();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    var eventListProvider = Provider.of<EventListProvider>(context);
+
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
 
@@ -126,35 +99,39 @@ class _HomeTabState extends State<HomeTab> {
 
                 /// ✅ TabBar باستخدام الموديل
                 DefaultTabController(
-                  length: eventsDataList.length,
+                  length: eventListProvider.eventsDataList.length,
                   child: TabBar(
-                      
                     onTap: (index) {
-                      setState(() => selectedIndex = index);
+                      setState(
+                        () => eventListProvider.changeSelectedIndex(index),
+                      );
                     },
                     labelPadding: EdgeInsets.symmetric(
                       horizontal: width * 0.01,
                     ),
                     tabAlignment: TabAlignment.start,
                     indicatorColor: Colors.transparent,
-                       
+
                     dividerColor: Colors.transparent,
                     isScrollable: true,
                     tabs:
-                        eventsDataList.asMap().entries.map((entry) {
+                        eventListProvider.eventsDataList.asMap().entries.map((
+                          entry,
+                        ) {
                           final idx = entry.key;
                           final event = entry.value;
                           return EventTabItemWidget(
                             eventName: event.name,
                             iconData: event.icon,
-                            isSelected: idx == selectedIndex,
+                            isSelected: idx == eventListProvider.selectedIndex,
                             selectedBackgroundColor: AppColors.whiteColor,
-                            unselectedBackgroundColor: AppColors.transparentColor,
-                            selectedIconColor:AppColors.primaryLight,
+                            unselectedBackgroundColor:
+                                AppColors.transparentColor,
+                            selectedIconColor: AppColors.primaryLight,
                             unselectedIconColor: AppColors.whiteColor,
                             selectedTextStyle: AppStyles.bold16Primary,
-                            unselectedTextStyle:AppStyles.bold16White ,
-                            borderColor: AppColors.whiteColor ,
+                            unselectedTextStyle: AppStyles.bold16White,
+                            borderColor: AppColors.whiteColor,
                           );
                         }).toList(),
                   ),
@@ -163,12 +140,22 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemBuilder: (BuildContext context, int index) {
-                return const EventItem();
-              },
-              itemCount: 5,
-            ),
+            child:
+                eventListProvider.eventsFiltered.isEmpty
+                    ? Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.no_events_found,
+                        style: AppStyles.bold20Primary,
+                      ),
+                    )
+                    : ListView.builder(
+                      itemBuilder: (BuildContext context, int index) {
+                        return EventItem(
+                          event: eventListProvider.eventsFiltered[index],
+                        );
+                      },
+                      itemCount: eventListProvider.eventsFiltered.length,
+                    ),
           ),
         ],
       ),

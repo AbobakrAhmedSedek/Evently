@@ -50,7 +50,10 @@
   "search_event" : "Search For Event",
   "no_events_found" : "No Events Found Yet",
   "please_enter_event_title": " please enter event title ",
-  "please_enter_event_description": "please enter event description"
-
+  "please_enter_event_description": "please enter event description",
+  "error_occurred": "An error occurred while adding the event",
+  "event_added_successfully": "Event added successfully",
+  "added_to_favorites": "Added to favorites",
+  "removed_from_favorites": "Removed from favorites"
 
 }
