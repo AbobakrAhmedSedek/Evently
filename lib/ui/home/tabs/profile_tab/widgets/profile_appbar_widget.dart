@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:evently/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // جديد
 import 'package:evently/utils/app_colors.dart';
 import 'package:evently/utils/assets_manager.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../../utils/app_styles.dart';
 
@@ -20,22 +22,35 @@ class ProfileAppbarWidget extends StatefulWidget
 
 class _ProfileAppbarWidgetState extends State<ProfileAppbarWidget> {
   File? userImage;
+  bool _isPicking = false; // متغير لتحديد ما إذا كان الـ picker شغال الآن
 
   /// دالة لاختيار صورة من المعرض
   Future<void> pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? file = await picker.pickImage(source: ImageSource.gallery);
-    if (file != null) {
-      setState(() {
-        userImage = File(file.path);
-      });
+    // لو الـ picker شغال، نخرج فورًا
+    if (_isPicking) return;
+    _isPicking = true;
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+
+      if (file != null) {
+        setState(() {
+          userImage = File(file.path);
+        });
+      }
+    } catch (e) {
+      print("Error picking image: $e");
+    } finally {
+      // سواء حصل خطأ أو لا، نرجّع الفلاغ للحالة العادية
+      _isPicking = false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
-
+    var userProvider = Provider.of<UserProvider>(context);
     return AppBar(
       backgroundColor: AppColors.primaryLight,
       toolbarHeight: height * 0.18,
@@ -94,14 +109,37 @@ class _ProfileAppbarWidgetState extends State<ProfileAppbarWidget> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Abo bakr', style: AppStyles.bold24White),
-                  SizedBox(height: height * 0.01),
-                  Text(
-                    "Abobakr@gmail.com",
-                    style: AppStyles.medium16White,
-                    overflow: TextOverflow.visible,
-                    softWrap: true,
-                  ),
+                  if (userProvider.user == null)
+                    const Text(
+                      "Guest User",
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userProvider.user!.name,
+                          style: AppStyles.bold24White,
+                        ),
+                        SizedBox(height: height * 0.01),
+                        Text(
+                          userProvider.user!.email,
+                          style: AppStyles.medium16White,
+                          overflow: TextOverflow.visible,
+                          softWrap: true,
+                        ),
+                      ],
+                    ),
+
+                  // Text(userProvider.user!.name, style: AppStyles.bold24White),
+                  // SizedBox(height: height * 0.01),
+                  // Text(
+                  //   userProvider.user!.email,
+                  //   style: AppStyles.medium16White,
+                  //   overflow: TextOverflow.visible,
+                  //   softWrap: true,
+                  // ),
                 ],
               ),
             ),

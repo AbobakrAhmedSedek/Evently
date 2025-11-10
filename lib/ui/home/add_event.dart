@@ -1,5 +1,7 @@
 import 'package:evently/model/event.dart';
 import 'package:evently/providers/event_list_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:evently/providers/user_provider.dart';
 import 'package:evently/ui/home/tabs/home_tab/widgets/event_tab_item_widget.dart';
 import 'package:evently/ui/widgets/custom_elevated_button.dart';
 import 'package:evently/ui/widgets/custom_text_field.dart';
@@ -15,7 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class AddEvent extends StatefulWidget {
-  static const routeName = '/add_event';
+  static const routeName =  "add_event";
 
   @override
   State<AddEvent> createState() => _AddEventState();
@@ -50,7 +52,10 @@ class _AddEventState extends State<AddEvent> {
     super.initState();
     // تهيئة قائمة الأحداث عند فتح الشاشة
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      eventListProvider = Provider.of<EventListProvider>(context, listen: false);
+      eventListProvider = Provider.of<EventListProvider>(
+        context,
+        listen: false,
+      );
       eventListProvider.getEventsDataList(context);
     });
   }
@@ -60,12 +65,14 @@ class _AddEventState extends State<AddEvent> {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
     eventListProvider = Provider.of<EventListProvider>(context);
+
     final eventsDataList = eventListProvider.eventsDataList;
 
     // تأكد من أن القائمة ليست فارغة قبل استخدام selectedIndex
-    final String selectedImage = selectedIndex < imageSelectedEventList.length
-        ? imageSelectedEventList[selectedIndex]
-        : imageSelectedEventList[0];
+    final String selectedImage =
+        selectedIndex < imageSelectedEventList.length
+            ? imageSelectedEventList[selectedIndex]
+            : imageSelectedEventList[0];
 
     return Scaffold(
       appBar: AppBar(
@@ -95,7 +102,8 @@ class _AddEventState extends State<AddEvent> {
                   height: height * 0.06,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: eventsDataList.length - 1, // نستثني "All" من القائمة
+                    itemCount:
+                        eventsDataList.length - 1, // نستثني "All" من القائمة
                     itemBuilder: (BuildContext context, int index) {
                       // نبدأ من index 1 لتجنب "All"
                       int actualIndex = index + 1;
@@ -262,6 +270,7 @@ class _AddEventState extends State<AddEvent> {
   }
 
   void updateEvent() {
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
     if (formKey.currentState?.validate() == true) {
       // التحقق من أن selectedDate و selectedTime ليسا null
       if (selectedDate == null) {
@@ -291,6 +300,15 @@ class _AddEventState extends State<AddEvent> {
       // نستخدم selectedIndex + 1 لأننا استثنينا "All" من القائمة
       int actualIndex = selectedIndex + 1;
 
+      String? userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        ToastUtils.showToast(
+          message: "Please login first",
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
+
       Event event = Event(
         category: eventListProvider.eventsDataList[actualIndex].categoryKey,
         eventName: eventListProvider.eventsDataList[actualIndex].name,
@@ -299,19 +317,20 @@ class _AddEventState extends State<AddEvent> {
         title: titleController.text,
         date: selectedDate!,
         time: formatTime!,
+        userId: userId,
       );
-
-      FirebaseUtils.addEvent(event).timeout(
-        Duration(milliseconds: 500),
-        onTimeout: () {
+      FirebaseUtils.addEvent(event, userProvider.user!.id).then((Value) {
+        if (context.mounted) {
           ToastUtils.showToast(
             message: AppLocalizations.of(context)!.event_added_successfully,
             backgroundColor: Colors.green,
           );
-          eventListProvider.getAllEvents();
+          eventListProvider.getAllEvents(userProvider.user!.id);
+          eventListProvider.changeSelectedIndex(0);
           Navigator.pop(context);
-        },
-      );
+        
+        }
+      });
     }
   }
 }

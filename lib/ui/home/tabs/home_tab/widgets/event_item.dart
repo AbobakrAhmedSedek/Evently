@@ -1,5 +1,6 @@
 import 'package:evently/model/event.dart';
 import 'package:evently/providers/event_list_provider.dart';
+import 'package:evently/providers/user_provider.dart';
 import 'package:evently/utils/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +17,7 @@ class EventItem extends StatelessWidget {
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
+     var userProvider = Provider.of<UserProvider>(context);
     return Container(
       height: height * 0.25,
       width: width * 0.9,
@@ -72,10 +74,10 @@ class EventItem extends StatelessWidget {
                 ),
                 Spacer(),
                 IconButton(
-                  onPressed: () {
+                  onPressed: ( ) {
                   
                     Provider.of<EventListProvider>(context, listen: false)
-                        .updateIsFavoriteEvents(event, context);
+                        .updateIsFavoriteEvents(event, context  , userProvider.user!.id );
                   },
                   icon: Image.asset(
                     event.isFavorite == true
