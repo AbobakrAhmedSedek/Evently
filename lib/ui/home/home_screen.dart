@@ -92,7 +92,7 @@ class NotchClipper extends CustomClipper<Path> {
 }
 
 class HomeScreen extends StatefulWidget {
-  static const routeName = '/';
+  static const routeName =   'home_screen' ;
 
   const HomeScreen({super.key});
 

@@ -1,5 +1,6 @@
 //todo:  new code
 import 'package:evently/providers/event_list_provider.dart';
+import 'package:evently/providers/user_provider.dart';
 import 'package:evently/ui/home/tabs/home_tab/widgets/event_item.dart';
 import 'package:evently/utils/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -19,12 +20,13 @@ class _FavoriteTabState extends State<FavoriteTab> {
   final ScrollController _scrollController = ScrollController();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context ) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     var eventListProvider = Provider.of<EventListProvider>(context);
+    var userProvider = Provider.of<UserProvider>(context);
     if (eventListProvider.favoriteEventsList.isEmpty) {
-      eventListProvider.getAllfavoriteEvents();
+      eventListProvider.getAllfavoriteEvents( userProvider.user!.id );
         }
     return Scaffold(
       body: SafeArea(

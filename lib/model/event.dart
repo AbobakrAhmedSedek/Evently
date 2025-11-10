@@ -2,7 +2,8 @@
 class Event {
   static const String collectionName = 'events';
 
-  final String id;
+  String id;
+  final String userId;
   final String image;
   final String description;
   final String title;
@@ -16,6 +17,7 @@ class Event {
     required this.eventName,
     this.isFavorite = false,
     this.id = '',
+    required this.userId,
     required this.image,
     required this.description,
     required this.title,
@@ -28,6 +30,7 @@ class Event {
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
       id: json['id'] ?? '',
+      userId: json['userId'] ?? '',
       image: json['image'] ?? '',
       description: json['description'] ?? '',
       title: json['title'] ?? '',
@@ -43,6 +46,7 @@ class Event {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'userId': userId,
       'image': image,
       'description': description,
       'title': title,
@@ -57,6 +61,7 @@ class Event {
   /// ✅ دالة copyWith لإنشاء نسخة جديدة مع تعديل قيم محددة
   Event copyWith({
     String? id,
+    String? userId,
     String? image,
     String? description,
     String? title,
@@ -68,6 +73,7 @@ class Event {
   }) {
     return Event(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       image: image ?? this.image,
       description: description ?? this.description,
       title: title ?? this.title,

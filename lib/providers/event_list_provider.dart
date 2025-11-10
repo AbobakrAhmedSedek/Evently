@@ -72,9 +72,9 @@ class EventListProvider with ChangeNotifier {
   }
 
   /// ✅ جلب جميع الأحداث من Firebase
-  Future<void> getAllEvents() async {
+  Future<void> getAllEvents(String uId) async {
     QuerySnapshot<Event> querySnapshot =
-        await FirebaseUtils.getEventsCollection().get();
+        await FirebaseUtils.getEventsCollection(uId).get();
 
     /// إضافة id لكل حدث من doc.id
     eventsList =
@@ -112,7 +112,11 @@ class EventListProvider with ChangeNotifier {
   }
 
   /// ✅ تحديث حالة المفضلة
-  void updateIsFavoriteEvents(Event event, BuildContext context) async {
+  void updateIsFavoriteEvents(
+    Event event,
+    BuildContext context,
+    String uId,
+  ) async {
     final bool oldValue = event.isFavorite;
     final String docId = event.id;
 
@@ -120,7 +124,7 @@ class EventListProvider with ChangeNotifier {
       print('Cannot update favorite: event.id is empty');
       return;
     }
-      getAllfavoriteEvents();
+    getAllfavoriteEvents(uId);
 
     // 🔹 1. تعديل محلي (Optimistic Update)
     final updatedEvent = event.copyWith(isFavorite: !oldValue);
@@ -135,9 +139,10 @@ class EventListProvider with ChangeNotifier {
 
     // 🔹 2. تحديث في Firebase
     try {
-      await FirebaseUtils.getEventsCollection().doc(docId).update({
-        'isFavorite': !oldValue,
-      });
+      await FirebaseUtils.getEventsCollection(
+        uId,
+      ).doc(docId).update({'isFavorite': !oldValue});
+      if (!context.mounted) return;
 
       String message =
           !oldValue
@@ -162,12 +167,11 @@ class EventListProvider with ChangeNotifier {
     }
   }
 
-  Future<void> getAllfavoriteEvents() async {
+  Future<void> getAllfavoriteEvents(String uId) async {
     var querySnapshot =
-        await FirebaseUtils.getEventsCollection()
-            .where('isFavorite', isEqualTo: true)
-            .orderBy('date')
-            .get();
+        await FirebaseUtils.getEventsCollection(
+          uId,
+        ).where('isFavorite', isEqualTo: true).orderBy('date').get();
     favoriteEventsList =
         querySnapshot.docs.map((doc) {
           return doc.data().copyWith(id: doc.id);
@@ -175,6 +179,17 @@ class EventListProvider with ChangeNotifier {
 
     notifyListeners();
   }
+
+  void clearEvents() {
+    eventsList.clear();
+    eventsFiltered.clear();
+    selectedIndex = 0;
+    notifyListeners();
+  }
+
+  // eventsList = [];
+  // eventsFiltered = [];
+  // favoriteEventsList = [];
 }
 
 //  ---------------------------------------------------------------------------------------------------------------

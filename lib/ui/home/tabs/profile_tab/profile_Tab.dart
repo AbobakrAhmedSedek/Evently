@@ -1,14 +1,16 @@
+import 'package:evently/providers/user_provider.dart';
 import 'package:evently/ui/home/tabs/profile_tab/widgets/theme_bottom_sheet.dart';
 import 'package:evently/utils/app_styles.dart';
+import 'package:evently/utils/firebase_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../../providers/language_provider.dart';
 import '../../../../providers/theme_provider.dart';
 import '../../../../utils/app_colors.dart';
-import '../../../../utils/assets_manager.dart';
 import 'widgets/language_bottom_sheet.dart';
 import 'widgets/profile_appbar_widget.dart';
+import 'package:evently/ui/authentication/login/login_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key});
@@ -116,7 +118,12 @@ class ProfileTab extends StatelessWidget {
                   vertical: height * 0.015,
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                FirebaseUtils.logout();
+                // Provider.of<UserProvider>(context, listen: false).logout(context);
+                //   Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
+                  
+              },
               child: Row(
                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

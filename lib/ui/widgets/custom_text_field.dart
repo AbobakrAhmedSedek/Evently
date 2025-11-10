@@ -3,6 +3,9 @@ import '../../utils/app_colors.dart';
 import '../../utils/app_styles.dart';
 // typedef MyValidator =  String? Function(String?)?;
 class CustomTextField extends StatelessWidget {
+  final bool obscureText;
+  final String obscuringCharacter;
+  final TextInputType? textInputType;
   final Color? borderColor;
   final String? hintText;
   final TextStyle? hintStyle;
@@ -23,11 +26,18 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.maxLines,
     this.validator,
+    this.textInputType = TextInputType.text,
+      this.obscureText = false,
+      this.obscuringCharacter = '•',
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      obscureText: obscureText,
+      obscuringCharacter: obscuringCharacter,
+      textInputAction: TextInputAction.next,
+      keyboardType: textInputType,
       validator: validator,
       controller: controller,
       maxLines: maxLines ?? 1,
