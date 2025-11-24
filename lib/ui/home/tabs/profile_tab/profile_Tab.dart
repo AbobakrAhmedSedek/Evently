@@ -1,4 +1,3 @@
-import 'package:evently/providers/user_provider.dart';
 import 'package:evently/ui/home/tabs/profile_tab/widgets/theme_bottom_sheet.dart';
 import 'package:evently/utils/app_styles.dart';
 import 'package:evently/utils/firebase_utils.dart';
@@ -10,7 +9,6 @@ import '../../../../providers/theme_provider.dart';
 import '../../../../utils/app_colors.dart';
 import 'widgets/language_bottom_sheet.dart';
 import 'widgets/profile_appbar_widget.dart';
-import 'package:evently/ui/authentication/login/login_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key});

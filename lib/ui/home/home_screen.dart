@@ -1,15 +1,17 @@
-
-
+// import 'package:evently/providers/add_event_provider.dart';
+// import 'package:evently/providers/maps_tab_provider.dart';
 import 'package:evently/ui/home/tabs/favorite_tab/favorite_tab.dart';
 import 'package:evently/ui/home/tabs/home_tab/home_tab.dart';
 import 'package:evently/ui/home/tabs/map_tab/map_tab.dart';
 import 'package:evently/ui/home/tabs/profile_tab/profile_tab.dart'; // ✅ تعديل هنا
-import 'package:evently/ui/home/add_event.dart';
+import 'package:evently/ui/home/create_event/add_event.dart';
 import 'package:evently/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// import 'package:provider/provider.dart';
 import '../../../utils/assets_manager.dart';
 import 'dart:math' as math; // ✅ إضافة هنا
+
 // ✅ CustomClipper لعمل الـ notch
 // class NotchClipper extends CustomClipper<Path> {
 //   @override
@@ -92,7 +94,7 @@ class NotchClipper extends CustomClipper<Path> {
 }
 
 class HomeScreen extends StatefulWidget {
-  static const routeName =   'home_screen' ;
+  static const routeName = 'home_screen';
 
   const HomeScreen({super.key});
 
@@ -102,15 +104,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
-  List<Widget> pages = [
-    HomeTab(),
-    MapTab(),
-    FavoriteTab(),
-    ProfileTab(),
-  ];
+  List<Widget> pages = [HomeTab(), MapTab( ), FavoriteTab(), ProfileTab()];
+    // late AddEventProvider addEventProvider;
 
   @override
   Widget build(BuildContext context) {
+    // MapsTabProvider provider = Provider.of<MapsTabProvider>(context);
+  
     return Scaffold(
       extendBody: true,
       body: pages[selectedIndex],
@@ -185,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCustomFAB() {
+    // final addEventProvider = Provider.of<AddEventProvider>(context, listen: false);
     return Container(
       width: 65,
       height: 65,
@@ -212,12 +213,9 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(32.5),
           onTap: () {
             Navigator.of(context).pushNamed(AddEvent.routeName);
+            // addEventProvider.dispose();
           },
-          child: Icon(
-            Icons.add,
-            color: AppColors.whiteColor,
-            size: 32,
-          ),
+          child: Icon(Icons.add, color: AppColors.whiteColor, size: 32),
         ),
       ),
     );
