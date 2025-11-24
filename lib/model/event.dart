@@ -12,6 +12,8 @@ class Event {
   final String eventName;
   final bool isFavorite;
   final String category;
+  double? latitude;
+  double? longitude;
 
   Event({
     required this.eventName,
@@ -24,6 +26,8 @@ class Event {
     required this.date,
     required this.time,
     required this.category,
+    this.latitude = 0.0,
+    this.longitude = 0.0,
   });
 
   /// ✅ Factory constructor لتحويل JSON إلى Object
@@ -35,10 +39,12 @@ class Event {
       description: json['description'] ?? '',
       title: json['title'] ?? '',
       date: DateTime.fromMillisecondsSinceEpoch(json['date'] ?? 0),
-      time: json['time'] ?? '',
+      time: json['time'] ?? '', 
       eventName: json['eventName'] ?? '',
       isFavorite: json['isFavorite'] ?? false,
       category: json['category'] ?? '',
+      latitude: (json['latitude'] != null) ? json['latitude']: 0.0,
+      longitude: (json['longitude'] != null) ? json['longitude'] : 0.0,
     );
   }
 
@@ -55,6 +61,8 @@ class Event {
       'eventName': eventName,
       'isFavorite': isFavorite,
       'category': category,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 
@@ -70,6 +78,8 @@ class Event {
     String? eventName,
     bool? isFavorite,
     String? category,
+    double? latitude,
+    double? longitude,
   }) {
     return Event(
       id: id ?? this.id,
@@ -82,6 +92,8 @@ class Event {
       eventName: eventName ?? this.eventName,
       isFavorite: isFavorite ?? this.isFavorite,
       category: category ?? this.category,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
   }
 }

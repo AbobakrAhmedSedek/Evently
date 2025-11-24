@@ -54,6 +54,7 @@
   "error_occurred": "حدث خطأ أثناء إضافة الحدث",
   "event_added_successfully": "تمت إضافة الفعالية بنجاح",
   "added_to_favorites": "تمت إضافته إلى المفضلة",
-  "removed_from_favorites": "تمت إزالته من المفضلة"
+  "removed_from_favorites": "تمت إزالته من المفضلة",
+  "tap_to_select_location": "اضغط لاختيار الموقع"
 
 }
