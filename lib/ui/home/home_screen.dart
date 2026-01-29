@@ -104,16 +104,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
-  List<Widget> pages = [HomeTab(), MapTab( ), FavoriteTab(), ProfileTab()];
-    // late AddEventProvider addEventProvider;
+  late final List<Widget> pages;
+  // late AddEventProvider addEventProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    pages = [HomeTab(), MapTab(), FavoriteTab(), ProfileTab()];
+  }
 
   @override
   Widget build(BuildContext context) {
     // MapsTabProvider provider = Provider.of<MapsTabProvider>(context);
-  
+
     return Scaffold(
       extendBody: true,
-      body: pages[selectedIndex],
+      body: IndexedStack(index: selectedIndex, children: pages),
       bottomNavigationBar: _buildClippedBottomBar(),
       floatingActionButton: _buildCustomFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

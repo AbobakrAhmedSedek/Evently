@@ -1,3 +1,6 @@
 {
-  "CodeGPT.apiKey": "Github Copilot"
+  "CodeGPT.apiKey": "Github Copilot",
+  "commentTranslate.source": "Google",
+  "commentTranslate.hover.enabled": true,
+  "commentTranslate.targetLanguage": "ar"
 }

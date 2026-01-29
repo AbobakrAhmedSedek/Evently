@@ -1,4 +1,4 @@
-import 'package:evently/model/my_user.dart';
+import 'package:evently/domain/model/my_user.dart';
 import 'package:evently/providers/event_list_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +18,7 @@ class UserProvider with ChangeNotifier {
 
     // ✅ تفريغ الأحداث القديمة عند تسجيل الخروج
     Provider.of<EventListProvider>(context, listen: false).clearEvents();
+    
 
     notifyListeners();
   }
