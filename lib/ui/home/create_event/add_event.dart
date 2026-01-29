@@ -30,11 +30,11 @@ class _AddEventState extends State<AddEvent> {
         listen: false,
       );
       eventListProvider.getEventsDataList(context);
-    final addEventProvider = Provider.of<AddEventProvider>(
-      context,
-      listen: false,
-    );
-    addEventProvider.clearData();
+      final addEventProvider = Provider.of<AddEventProvider>(
+        context,
+        listen: false,
+      );
+      addEventProvider.clearData();
     });
   }
 
@@ -143,7 +143,6 @@ class _AddEventState extends State<AddEvent> {
                         Text(
                           AppLocalizations.of(context)!.description,
                           style: AppStyles.medium16Black,
-
                         ),
                         SizedBox(height: height * 0.01),
                         CustomTextField(
@@ -248,9 +247,9 @@ class _AddEventState extends State<AddEvent> {
 
                         // Submit Button
                         CustomElevatedButton(
-                          text: AppLocalizations.of(context)!.update_event,
-                          onButtonClick: () {
-                            addEventProvider.updateEvent(
+                          text: AppLocalizations.of(context)!.add_event,
+                          onButtonClick: () async {
+                            await addEventProvider.updateEvent(
                               context,
                               eventListProvider,
                               userProvider,

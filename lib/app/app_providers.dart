@@ -20,7 +20,13 @@ class AppProviders extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => EventListProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => MapsTabProvider()),
+        ChangeNotifierProxyProvider<EventListProvider, MapsTabProvider>(
+          create:
+              (context) => MapsTabProvider(context.read<EventListProvider>()),
+          update:
+              (context, eventListProvider, previous) =>
+                  previous ?? MapsTabProvider(eventListProvider),
+        ),
         ChangeNotifierProvider(create: (_) => AddEventProvider()),
       ],
       child: child,

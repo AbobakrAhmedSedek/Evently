@@ -1,4 +1,4 @@
-import 'package:evently/model/event.dart';
+import 'package:evently/domain/model/event.dart';
 import 'package:evently/providers/event_list_provider.dart';
 import 'package:evently/providers/user_provider.dart';
 import 'package:evently/utils/app_styles.dart';

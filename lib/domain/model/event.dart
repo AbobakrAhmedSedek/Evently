@@ -9,15 +9,12 @@ class Event {
   final String title;
   final DateTime date;
   final String time;
-  final String eventName;
   final bool isFavorite;
   final String category;
   double? latitude;
   double? longitude;
 
   Event({
-    required this.eventName,
-    this.isFavorite = false,
     this.id = '',
     required this.userId,
     required this.image,
@@ -25,9 +22,10 @@ class Event {
     required this.title,
     required this.date,
     required this.time,
+    this.isFavorite = false,
     required this.category,
-    this.latitude = 0.0,
-    this.longitude = 0.0,
+    this.latitude,
+    this.longitude,
   });
 
   /// ✅ Factory constructor لتحويل JSON إلى Object
@@ -38,13 +36,14 @@ class Event {
       image: json['image'] ?? '',
       description: json['description'] ?? '',
       title: json['title'] ?? '',
-      date: DateTime.fromMillisecondsSinceEpoch(json['date'] ?? 0),
-      time: json['time'] ?? '', 
-      eventName: json['eventName'] ?? '',
+      date: json['date'] != null 
+          ? DateTime.fromMillisecondsSinceEpoch(json['date']) 
+          : DateTime.now(),
+      time: json['time'] ?? '',
       isFavorite: json['isFavorite'] ?? false,
       category: json['category'] ?? '',
-      latitude: (json['latitude'] != null) ? json['latitude']: 0.0,
-      longitude: (json['longitude'] != null) ? json['longitude'] : 0.0,
+      latitude: json['latitude']?.toDouble(),
+      longitude: json['longitude']?.toDouble(),
     );
   }
 
@@ -58,15 +57,14 @@ class Event {
       'title': title,
       'date': date.millisecondsSinceEpoch,
       'time': time,
-      'eventName': eventName,
       'isFavorite': isFavorite,
       'category': category,
-      'latitude': latitude,
-      'longitude': longitude,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
     };
   }
 
-  /// ✅ دالة copyWith لإنشاء نسخة جديدة مع تعديل قيم محددة
+  /// ✅ دالة copyWith
   Event copyWith({
     String? id,
     String? userId,
@@ -75,7 +73,6 @@ class Event {
     String? title,
     DateTime? date,
     String? time,
-    String? eventName,
     bool? isFavorite,
     String? category,
     double? latitude,
@@ -89,7 +86,6 @@ class Event {
       title: title ?? this.title,
       date: date ?? this.date,
       time: time ?? this.time,
-      eventName: eventName ?? this.eventName,
       isFavorite: isFavorite ?? this.isFavorite,
       category: category ?? this.category,
       latitude: latitude ?? this.latitude,
@@ -97,8 +93,6 @@ class Event {
     );
   }
 }
-
-
 //  ---------------------------------------------------------------------------------------------------------------
 
 // class Event {

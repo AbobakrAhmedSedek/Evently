@@ -1,20 +1,27 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:evently/model/event.dart';
+import 'package:evently/data/repositories/event_repository.dart';
+import 'package:evently/domain/model/event.dart';
 import 'package:evently/ui/home/tabs/home_tab/models/event_data_model.dart';
-import 'package:evently/utils/firebase_utils.dart';
 import 'package:evently/utils/toast_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EventListProvider with ChangeNotifier {
+  // ✅ استخدام EventRepository بدلاً من FirebaseUtils
+  final EventRepository _eventRepository = EventRepository();
+
   List<Event> eventsList = [];
   List<Event> eventsFiltered = [];
   List<EventData> eventsDataList = [];
   List<Event> favoriteEventsList = [];
   int selectedIndex = 0;
 
-  /// ✅ إنشاء Tabs (أنواع الأحداث)
+  // ============================================
+  // 📊 Events Data (Tabs/Categories)
+  // ============================================
+
+  /// إنشاء Tabs (أنواع الأحداث)
   void getEventsDataList(BuildContext context) {
     eventsDataList = [
       EventData(
@@ -71,28 +78,79 @@ class EventListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// ✅ جلب جميع الأحداث من Firebase
-  Future<void> getAllEvents(String uId) async {
-    QuerySnapshot<Event> querySnapshot =
-        await FirebaseUtils.getEventsCollection(uId).get();
+  // ============================================
+  // 📖 Read Operations
+  // ============================================
 
-    /// إضافة id لكل حدث من doc.id
-    eventsList =
-        querySnapshot.docs.map((doc) {
-          Event e = doc.data();
-          return e.copyWith(id: doc.id);
-        }).toList();
+  /// جلب جميع الأحداث من Firebase
+  Future<void> getAllEvents(String userId) async {
+    try {
+      // ✅ استخدام Repository
+      eventsList = await _eventRepository.getAllEvents(userId);
 
-    eventsFiltered = eventsList;
-    eventsFiltered.sort((a, b) => a.date.compareTo(b.date));
-    notifyListeners();
+      // إضافة الـ id لكل حدث (إذا لم يكن موجوداً)
+      eventsFiltered = eventsList;
+      eventsFiltered.sort((a, b) => a.date.compareTo(b.date));
+
+      notifyListeners();
+    } catch (e) {
+      print('❌ Error getting events: $e');
+      eventsList = [];
+      eventsFiltered = [];
+      notifyListeners();
+    }
   }
 
-  /// ✅ فلترة الأحداث حسب التاب المختارة
+  /// جلب الأحداث المفضلة فقط
+  Future<void> getAllFavoriteEvents(String userId) async {
+    try {
+      // ✅ يمكن استخدام query مخصص أو فلترة محلية
+      //    
+      final allEvents = await _eventRepository.getAllEvents(userId);
+      favoriteEventsList = allEvents.where((e) => e.isFavorite).toList();
+      favoriteEventsList.sort((a, b) => a.date.compareTo(b.date));
+
+      notifyListeners();
+    } catch (e) {
+      print('❌ Error getting favorite events: $e');
+      favoriteEventsList = [];
+      notifyListeners();
+    }
+  }
+
+  /// جلب أحداث اليوم
+  Future<void> getTodayEvents(String userId) async {
+    try {
+      eventsList = await _eventRepository.getTodayEvents(userId);
+      eventsFiltered = eventsList;
+      notifyListeners();
+    } catch (e) {
+      print('❌ Error getting today events: $e');
+    }
+  }
+
+  /// جلب الأحداث القادمة
+  Future<void> getUpcomingEvents(String userId) async {
+    try {
+      eventsList = await _eventRepository.getUpcomingEvents(userId);
+      eventsFiltered = eventsList;
+      notifyListeners();
+    } catch (e) {
+      print('❌ Error getting upcoming events: $e');
+    }
+  }
+
+  // ============================================
+  // 🔍 Filter & Search
+  // ============================================
+
+  /// فلترة الأحداث حسب التاب المختارة
   void getFilterEvents() {
     if (selectedIndex == 0) {
+      // "All" tab
       eventsFiltered = eventsList;
     } else {
+      // فلترة حسب الفئة
       eventsFiltered =
           eventsList
               .where(
@@ -105,26 +163,99 @@ class EventListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// ✅ عند تغيير التاب
+  /// تغيير التاب المختارة
   void changeSelectedIndex(int newIndex) {
     selectedIndex = newIndex;
     getFilterEvents();
   }
 
-  /// ✅ تحديث حالة المفضلة
-  void updateIsFavoriteEvents(
+  /// البحث في الأحداث
+  Future<void> searchEvents(String userId, String query) async {
+    try {
+      if (query.isEmpty) {
+        await getAllEvents(userId);
+        return;
+      }
+
+      eventsList = await _eventRepository.searchEventsByTitle(userId, query);
+      eventsFiltered = eventsList;
+      notifyListeners();
+    } catch (e) {
+      print('❌ Error searching events: $e');
+    }
+  }
+
+  // ============================================
+  // ✍️ Create & Update
+  // ============================================
+  
+  // ✅ إضافة هذه الدالة في EventListProvider
+  /// تحديث القوائم من Firebase Snapshot
+  void updateEventsFromSnapshot(QuerySnapshot<Event> snapshot) {
+    // 📝 شرح: QuerySnapshot يحتوي على مجموعة من الـ Documents
+    // كل Document يمثل Event واحد
+
+    eventsList =
+        snapshot.docs.map((doc) {
+          //  doc.data() تعطينا Event object
+          Event e = doc.data();
+
+          //  doc.id يعطينا الـ ID من Firebase
+          // نستخدم copyWith لإضافة الـ ID للـ Event
+          return e.copyWith(id: doc.id);
+        }).toList();
+
+         getFilterEvents();
+
+  }
+
+  ///   إضافة حدث جديد الى Firebase
+  Future<bool> addEvent(Event event, String userId) async {
+    try {
+      await _eventRepository.addEvent(event, userId);
+
+      // تحديث القائمة المحلية
+      await getAllEvents(userId);
+
+      return true;
+    } catch (e) {
+      print('❌ Error adding event: $e');
+      return false;
+    }
+  }
+
+  /// تحديث حدث
+  Future<bool> updateEvent(Event event, String userId) async {
+    try {
+      await _eventRepository.updateEvent(event, userId);
+
+      // تحديث القائمة المحلية
+      await getAllEvents(userId);
+
+      return true;
+    } catch (e) {
+      print('❌ Error updating event: $e');
+      return false;
+    }
+  }
+
+  /// تحديث حالة المفضلة (Optimistic Update)
+  Future<void> updateIsFavoriteEvents(
     Event event,
     BuildContext context,
-    String uId,
+    String userId,
   ) async {
     final bool oldValue = event.isFavorite;
     final String docId = event.id;
 
     if (docId.isEmpty) {
-      print('Cannot update favorite: event.id is empty');
+      print('❌ Cannot update favorite: event.id is empty');
+      ToastUtils.showToast(
+        message: 'Invalid event ID',
+        backgroundColor: Colors.red,
+      );
       return;
     }
-    getAllfavoriteEvents(uId);
 
     // 🔹 1. تعديل محلي (Optimistic Update)
     final updatedEvent = event.copyWith(isFavorite: !oldValue);
@@ -139,9 +270,16 @@ class EventListProvider with ChangeNotifier {
 
     // 🔹 2. تحديث في Firebase
     try {
-      await FirebaseUtils.getEventsCollection(
-        uId,
-      ).doc(docId).update({'isFavorite': !oldValue});
+      await _eventRepository.updateEventField(
+        userId,
+        docId,
+        'isFavorite',
+        !oldValue,
+      );
+
+      // تحديث قائمة المفضلة
+      await getAllFavoriteEvents(userId);
+
       if (!context.mounted) return;
 
       String message =
@@ -159,337 +297,88 @@ class EventListProvider with ChangeNotifier {
       if (idxFiltered != -1) eventsFiltered[idxFiltered] = event;
       notifyListeners();
 
-      print("Error updating favorite: $error");
-      ToastUtils.showToast(
-        message: 'Failed to update favorite',
-        backgroundColor: Colors.red,
-      );
+      print("❌ Error updating favorite: $error");
+
+      if (context.mounted) {
+        ToastUtils.showToast(
+          message: 'Failed to update favorite',
+          backgroundColor: Colors.red,
+        );
+      }
     }
   }
 
-  Future<void> getAllfavoriteEvents(String uId) async {
-    var querySnapshot =
-        await FirebaseUtils.getEventsCollection(
-          uId,
-        ).where('isFavorite', isEqualTo: true).orderBy('date').get();
-    favoriteEventsList =
-        querySnapshot.docs.map((doc) {
-          return doc.data().copyWith(id: doc.id);
-        }).toList();
+  // ============================================
+  // 🗑️ Delete Operations
+  // ============================================
 
-    notifyListeners();
+  /// حذف حدث
+  Future<bool> deleteEvent(String userId, String eventId) async {
+    try {
+      await _eventRepository.deleteEvent(userId, eventId);
+
+      // تحديث القائمة المحلية
+      eventsList.removeWhere((e) => e.id == eventId);
+      eventsFiltered.removeWhere((e) => e.id == eventId);
+      favoriteEventsList.removeWhere((e) => e.id == eventId);
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print('❌ Error deleting event: $e');
+      return false;
+    }
   }
 
-  void clearEvents() {
-    eventsList.clear();
+  /// حذف جميع الأحداث
+  Future<bool> deleteAllEvents(String userId) async {
+    try {
+      await _eventRepository.deleteAllEvents(userId);
+      clearEvents();
+      return true;
+    } catch (e) {
+      print('❌ Error deleting all events: $e');
+      return false;
+    }
+  }
+
+  // ============================================
+  // 🧹 Clear & Reset
+  // ============================================
+
+  /// مسح جميع البيانات المحلية
+  void clearEvents()  {
+     eventsList.clear();
     eventsFiltered.clear();
+    favoriteEventsList.clear();
     selectedIndex = 0;
     notifyListeners();
   }
 
-  // eventsList = [];
-  // eventsFiltered = [];
-  // favoriteEventsList = [];
+  // ============================================
+  // 📊 Statistics & Info
+  // ============================================
+
+  /// عدد الأحداث الكلي
+  int get totalEventsCount => eventsList.length;
+
+  /// عدد الأحداث المفضلة
+  int get favoriteEventsCount => favoriteEventsList.length;
+
+  /// عدد الأحداث المفلترة
+  int get filteredEventsCount => eventsFiltered.length;
+
+  /// التحقق من وجود أحداث
+  bool get hasEvents => eventsList.isNotEmpty;
+
+  /// التحقق من وجود أحداث مفلترة
+  bool get hasFilteredEvents => eventsFiltered.isNotEmpty;
+
+  /// الحصول على الفئة الحالية
+  String get currentCategory {
+    if (selectedIndex == 0) return 'all';
+    return eventsDataList[selectedIndex].categoryKey;
+  }
+
 }
 
-//  ---------------------------------------------------------------------------------------------------------------
-
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:evently/model/event.dart';
-// import 'package:evently/ui/home/tabs/home_tab/models/event_data_model.dart';
-// import 'package:evently/utils/firebase_utils.dart';
-// import 'package:evently/utils/toast_utils.dart';
-// import 'package:flutter/material.dart';
-// import 'package:icons_plus/icons_plus.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-// class EventListProvider with ChangeNotifier {
-//   List<Event> eventsList = [];
-//   List<Event> eventsFiltered = [];
-//   List<EventData> eventsDataList = [];
-//   int selectedIndex = 0;
-
-//   void getEventsDataList(BuildContext context) {
-//     eventsDataList = [
-//       EventData(
-//         name: AppLocalizations.of(context)!.all,
-//         icon: Bootstrap.house,
-//         categoryKey: 'all',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.sport,
-//         icon: FontAwesome.futbol_solid,
-//         categoryKey: 'sport',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.birthday,
-//         icon: Icons.cake,
-//         categoryKey: 'birthday',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.meeting,
-//         icon: Icons.people,
-//         categoryKey: 'meeting',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.gaming,
-//         icon: Icons.sports_esports,
-//         categoryKey: 'gaming',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.workshop,
-//         icon: Icons.work,
-//         categoryKey: 'workshop',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.book_club,
-//         icon: Icons.book,
-//         categoryKey: 'book_club',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.exhibition,
-//         icon: Icons.image,
-//         categoryKey: 'exhibition',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.holiday,
-//         icon: Icons.beach_access,
-//         categoryKey: 'holiday',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.eating,
-//         icon: Icons.fastfood,
-//         categoryKey: 'eating',
-//       ),
-//     ];
-//     notifyListeners();
-//   }
-
-//   Future<void> getAllEvents() async {
-//     QuerySnapshot<Event> querySnapshot =
-//         await FirebaseUtils.getEventsCollection().get();
-
-//     eventsList = querySnapshot.docs.map((doc) {
-//       Event e = doc.data();
-//       e.id = doc.id; // ✅ إضافة id هنا
-//       return e;
-//     }).toList();
-
-//     eventsFiltered = eventsList;
-//     eventsFiltered.sort((a, b) => a.date.compareTo(b.date));
-//     notifyListeners();
-//   }
-
-//   void getFilterEvents() {
-//     if (selectedIndex == 0) {
-//       eventsFiltered = eventsList;
-//     } else {
-//       eventsFiltered = eventsList
-//           .where((event) =>
-//               event.category == eventsDataList[selectedIndex].categoryKey)
-//           .toList();
-//     }
-//     eventsFiltered.sort((a, b) => a.date.compareTo(b.date));
-//     notifyListeners();
-//   }
-
-//   void changeSelectedIndex(int newIndex) {
-//     selectedIndex = newIndex;
-//     getFilterEvents();
-//   }
-
-//   /// ✅ تحديث حالة المفضلة مباشرة
-//   void updateIsFavoriteEvents(Event event, BuildContext context) async {
-//     final oldValue = event.isFavorite;
-//     event.isFavorite = !event.isFavorite; // ✅ تعديل مباشر
-//     notifyListeners();
-
-//     try {
-//       if (event.id.isEmpty) {
-//         print('❌ حدث بدون id، لا يمكن التحديث في Firebase');
-//         return;
-//       }
-
-//       await FirebaseUtils.getEventsCollection()
-//           .doc(event.id)
-//           .update({'isFavorite': event.isFavorite});
-
-//       String message = event.isFavorite
-//           ? AppLocalizations.of(context)!.added_to_favorites
-//           : AppLocalizations.of(context)!.removed_from_favorites;
-
-//       ToastUtils.showToast(
-//         message: message,
-//         backgroundColor: event.isFavorite ? Colors.green : Colors.red,
-//       );
-//     } catch (error) {
-//       // 🔙 رجع القيمة القديمة إذا فشل التحديث
-//       event.isFavorite = oldValue;
-//       notifyListeners();
-//       print('Error updating favorite: $error');
-//       ToastUtils.showToast(
-//         message: 'Failed to update favorite',
-//         backgroundColor: Colors.red,
-//       );
-//     }
-//   }
-// }
-
-//  ---------------------------------------------------------------------------------------------------------------
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:evently/model/event.dart';
-// import 'package:evently/ui/home/tabs/home_tab/models/event_data_model.dart';
-// import 'package:evently/utils/firebase_utils.dart';
-// import 'package:evently/utils/toast_utils.dart';
-// import 'package:flutter/material.dart';
-// import 'package:icons_plus/icons_plus.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-// class EventListProvider with ChangeNotifier {
-//   /// 🔹 قائمة كل الأحداث من Firebase
-//   List<Event> eventsList = [];
-
-//   /// 🔹 قائمة الأحداث بعد الفلترة
-//   List<Event> eventsFiltered = [];
-
-//   /// 🔹 بيانات التابات (الأنواع)
-//   List<EventData> eventsDataList = [];
-
-//   /// 🔹 التاب المحددة حاليًا
-//   int selectedIndex = 0;
-
-//   /// ✅ تهيئة Tabs عند بداية الصفحة
-//   void getEventsDataList(BuildContext context) {
-//     eventsDataList = [
-//       EventData(
-//         name: AppLocalizations.of(context)!.all,
-//         icon: Bootstrap.house,
-//         categoryKey: 'all',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.sport,
-//         icon: FontAwesome.futbol_solid,
-//         categoryKey: 'sport',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.birthday,
-//         icon: Iconsax.cake_bold,
-//         categoryKey: 'birthday',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.meeting,
-//         icon: EvaIcons.people,
-//         categoryKey: 'meeting',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.gaming,
-//         icon: Bootstrap.controller,
-//         categoryKey: 'gaming',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.workshop,
-//         icon: LineAwesome.toolbox_solid,
-//         categoryKey: 'workshop',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.book_club,
-//         icon: MingCute.book_2_fill,
-//         categoryKey: 'book_club',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.exhibition,
-//         icon: Clarity.picture_line,
-//         categoryKey: 'exhibition',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.holiday,
-//         icon: LineAwesome.hotel_solid,
-//         categoryKey: 'holiday',
-//       ),
-//       EventData(
-//         name: AppLocalizations.of(context)!.eating,
-//         icon: IonIcons.fast_food,
-//         categoryKey: 'eating',
-//       ),
-//     ];
-//     notifyListeners();
-//   }
-
-//   /// ✅ Firebase جلب جميع الأحداث من
-//   Future<void> getAllEvents() async {
-//     QuerySnapshot<Event> querySnapshot =
-//         await FirebaseUtils.getEventsCollection().get();
-
-//     /// 🔸 تعديل مهم:
-//     /// لازم نضيف `doc.id` لكل حدث، لأن Firestore ما يرجع id تلقائيًا داخل data().
-//     eventsList = querySnapshot.docs.map((doc) {
-//       Event e = doc.data();
-//       return Event(
-//         id: doc.id, // ← هنا نضيف المعرف الصحيح
-//         image: e.image,
-//         description: e.description,
-//         title: e.title,
-//         date: e.date,
-//         time: e.time,
-//         eventName: e.eventName,
-//         isFavorite: e.isFavorite,
-//         category: e.category,
-//       );
-//     }).toList();
-
-//     eventsFiltered = eventsList;
-//     eventsFiltered.sort((a, b) => a.date.compareTo(b.date));
-//     notifyListeners();
-//   }
-
-//   /// ✅ فلترة الأحداث حسب التاب المختارة
-//   void getFilterEvents() {
-//     if (selectedIndex == 0) {
-//       eventsFiltered = eventsList;
-//     } else {
-//       eventsFiltered = eventsList
-//           .where((event) =>
-//               event.category == eventsDataList[selectedIndex].categoryKey)
-//           .toList();
-//     }
-//     eventsFiltered.sort((a, b) => a.date.compareTo(b.date));
-//     notifyListeners();
-//   }
-
-//   /// ✅ عند تغيير التاب
-//   void changeSelectedIndex(int newIndex) {
-//     selectedIndex = newIndex;
-//     getFilterEvents();
-//   }
-
-//   /// ✅ تحديث حالة المفضلة
-//   void updateIsFavoriteEvents(Event event, BuildContext context) {
-//     bool wasFavorite = event.isFavorite;
-
-//     FirebaseUtils.getEventsCollection()
-//         .doc(event.id)
-//         .update({'isFavorite': !event.isFavorite})
-//         .timeout(
-//           const Duration(milliseconds: 500),
-//           onTimeout: () {
-//             print('updateIsFavoriteEvents timeout success');
-
-//             String message = wasFavorite
-//                 ? AppLocalizations.of(context)!.removed_from_favorites
-//                 : AppLocalizations.of(context)!.added_to_favorites;
-
-//             ToastUtils.showToast(
-//               message: message,
-//               backgroundColor: wasFavorite ? Colors.red : Colors.green,
-//             );
-//           },
-//         )
-//         .catchError((error) {
-//           print("Error updating favorite: $error");
-//         });
-
-//     /// 🔸 تحديث الحالة محليًا عشان الأيقونة تتغير فورًا
-//     event.isFavorite = !event.isFavorite;
-//     notifyListeners();
-//   }
-// }

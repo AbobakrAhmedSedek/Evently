@@ -55,6 +55,14 @@
   "event_added_successfully": "تمت إضافة الفعالية بنجاح",
   "added_to_favorites": "تمت إضافته إلى المفضلة",
   "removed_from_favorites": "تمت إزالته من المفضلة",
-  "tap_to_select_location": "اضغط لاختيار الموقع"
+  "tap_to_select_location": "اضغط لاختيار الموقع",
+  "warning": "تحذير",
+  "please_select_location_first": "يرجى اختيار موقع الحدث على الخريطة أولاً",
+  "please_tap_on_map_to_select_location": "انقر على الخريطة لتحديد موقع الحدث",
+  "select_location": "اختر الموقع",
+  "location_selected_tap_confirm": "تم تحديد الموقع! اضغط على زر التأكيد",
+  "confirm_location": "تأكيد الموقع",
+  "please_choose_location": "يرجى اختيار موقع الحدث",
+  "ok": "حسناً"
 
 }

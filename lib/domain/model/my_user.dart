@@ -4,7 +4,11 @@ class MyUser {
     final String name;
     final String email;
   
-    MyUser({required this.id, required this.name, required this.email});
+    MyUser({
+      required this.id,
+       required this.name, 
+       required this.email
+       });
   
     factory MyUser.fromMap(Map<String, dynamic> data) {
       return MyUser(

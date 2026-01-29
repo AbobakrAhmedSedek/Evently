@@ -55,6 +55,14 @@
   "event_added_successfully": "Event added successfully",
   "added_to_favorites": "Added to favorites",
   "removed_from_favorites": "Removed from favorites",
-  "tap_to_select_location": "Tap to select location"
+  "tap_to_select_location": "Tap to select location",
+  "warning": "Warning",
+  "please_select_location_first": "Please select event location on the map first",
+  "please_tap_on_map_to_select_location": "Please tap on the map to select event location",
+  "select_location": "Select Location",
+  "location_selected_tap_confirm": "Location selected! Tap confirm button",
+  "confirm_location": "Confirm Location",
+  "please_choose_location": "Please choose event location",
+  "ok": "OK"
 
 }

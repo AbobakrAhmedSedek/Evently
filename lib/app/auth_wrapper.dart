@@ -1,10 +1,10 @@
 
-import 'package:evently/model/my_user.dart';
+import 'package:evently/data/repositories/user_repository.dart';
+import 'package:evently/domain/model/my_user.dart';
 import 'package:evently/providers/event_list_provider.dart';
 import 'package:evently/providers/user_provider.dart';
 import 'package:evently/ui/authentication/login/login_screen.dart';
 import 'package:evently/ui/home/home_screen.dart';
-import 'package:evently/utils/firebase_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -67,7 +67,7 @@ class AuthWrapper extends StatelessWidget {
 
       try {
         // تحميل بيانات المستخدم من Firebase
-        final MyUser? userData = await FirebaseUtils.getUserById(user.uid);
+        final MyUser? userData = await UserRepository().getUserById(user.uid);
 
         if (userData != null) {
           // تحديث بيانات المستخدم
@@ -97,64 +97,3 @@ class AuthWrapper extends StatelessWidget {
 }
 
 
-
-// ------------------------------------------------------------------------------
-// import 'package:evently/model/my_user.dart';
-// import 'package:evently/providers/event_list_provider.dart';
-// import 'package:evently/providers/user_provider.dart';
-// import 'package:evently/ui/authentication/login/login_screen.dart';
-// import 'package:evently/ui/home/home_screen.dart';
-// import 'package:evently/utils/firebase_utils.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-
-// class AuthWrapper extends StatelessWidget {
-//   const AuthWrapper({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return StreamBuilder<User?>(
-//       stream: FirebaseAuth.instance.authStateChanges(),
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return const Scaffold(
-//             body: Center(child: CircularProgressIndicator()),
-//           );
-//         }
-
-//         var userProvider = Provider.of<UserProvider>(context, listen: false);
-//         var eventListProvider =
-//             Provider.of<EventListProvider>(context, listen: false);
-
-//         final bool isLoggedIn = snapshot.hasData;
-
-//         if (isLoggedIn) {
-//           final user = snapshot.data!;
-
-//           WidgetsBinding.instance.addPostFrameCallback((_) async {
-//             if (userProvider.user?.id == user.uid) return;
-
-//             // Load user data
-//             MyUser? userData = await FirebaseUtils.getUserById(user.uid);
-
-//             if (userData != null) {
-//               userProvider.updateUser(userData);
-
-//               eventListProvider.clearEvents();
-//               eventListProvider.getAllEvents(userData.id);
-//             }
-//           });
-
-//           return const HomeScreen();
-//         } else {
-//           WidgetsBinding.instance.addPostFrameCallback((_) {
-//             userProvider.logout(context);
-//           });
-
-//           return LoginScreen();
-//         }
-//       },
-//     );
-//   }
-// }
