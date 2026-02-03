@@ -227,7 +227,7 @@ class EventListProvider with ChangeNotifier {
   /// تحديث حدث
   Future<bool> updateEvent(Event event, String userId) async {
     try {
-      await _eventRepository.updateEvent(event, userId);
+      await _eventRepository.editEvent(event, userId);
 
       // تحديث القائمة المحلية
       await getAllEvents(userId);

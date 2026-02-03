@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:evently/domain/model/event.dart';
 import 'package:evently/domain/model/my_user.dart';
+import 'package:evently/ui/home/home_screen.dart';
+import 'package:evently/utils/toast_utils.dart';
+import 'package:flutter/material.dart';
 
 /// Repository للتعامل مع Events في Firestore
 /// مسؤول فقط عن CRUD operations للـ Events
@@ -27,16 +30,16 @@ class EventRepository {
   // ============================================
 
   /// إضافة Event جديد
-Future<void> addEvent(Event event, String userId) async {
-  // ✅ إنشاء DocumentReference مع ID تلقائي
-  final docRef = getEventsCollection(userId).doc();
-  
-  // ✅ تحديث الـ ID في الـ Event object
-  event.id = docRef.id;
-  
-  // ✅ حفظ البيانات
-  return docRef.set(event);
-}
+  Future<void> addEvent(Event event, String userId) async {
+    // ✅ إنشاء DocumentReference مع ID تلقائي
+    final docRef = getEventsCollection(userId).doc();
+
+    // ✅ تحديث الـ ID في الـ Event object
+    event.id = docRef.id;
+
+    // ✅ حفظ البيانات
+    return docRef.set(event);
+  }
 
   /// إضافة Event مع ID محدد
   Future<void> addEventWithId(
@@ -118,8 +121,23 @@ Future<void> addEvent(Event event, String userId) async {
   // ============================================
 
   /// تحديث Event
-  Future<void> updateEvent(Event event, String userId) async {
-    return getEventsCollection(userId).doc(event.id).update(event.toJson());
+  Future<bool> editEvent(Event event, String userId) async {
+    try {
+      await getEventsCollection(userId).doc(event.id).update(event.toJson());
+      ToastUtils.showToast(
+        message: 'Event updated successfully',
+        backgroundColor: Colors.green,
+      );
+
+      return true;
+    } catch (e) {
+      ToastUtils.showToast(
+        message: 'Failed to update event',
+        backgroundColor: Colors.red,
+      );
+      
+      return false;
+    }
   }
 
   /// تحديث حقل معين في Event

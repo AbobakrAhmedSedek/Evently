@@ -63,6 +63,8 @@
   "location_selected_tap_confirm": "تم تحديد الموقع! اضغط على زر التأكيد",
   "confirm_location": "تأكيد الموقع",
   "please_choose_location": "يرجى اختيار موقع الحدث",
-  "ok": "حسناً"
+  "ok": "حسناً",
+   "event_details": "تفاصيل الفعالية",
+  "edit_event": "تعديل الفعالية"
 
 }

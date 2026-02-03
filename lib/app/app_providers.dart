@@ -1,4 +1,5 @@
 import 'package:evently/providers/add_event_provider.dart';
+import 'package:evently/providers/event_details_provider.dart';
 import 'package:evently/providers/event_list_provider.dart';
 import 'package:evently/providers/language_provider.dart';
 import 'package:evently/providers/maps_tab_provider.dart';
@@ -28,6 +29,7 @@ class AppProviders extends StatelessWidget {
                   previous ?? MapsTabProvider(eventListProvider),
         ),
         ChangeNotifierProvider(create: (_) => AddEventProvider()),
+        ChangeNotifierProvider(create: (_) => EventDetailsProvider()),
       ],
       child: child,
     );
