@@ -1,3 +1,6 @@
+
+import 'package:evently/data/repositories/event_repository.dart';
+import 'package:evently/domain/model/event.dart';
 import 'package:evently/providers/add_event_provider.dart';
 import 'package:evently/providers/event_list_provider.dart';
 import 'package:evently/providers/user_provider.dart';
@@ -11,16 +14,21 @@ import 'package:evently/utils/app_styles.dart';
 import 'package:evently/utils/assets_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class AddEvent extends StatefulWidget {
   static const routeName = "add_event";
-  const AddEvent({super.key});
+  final Event? event;
+  const AddEvent({super.key, this.event});
   @override
   State<AddEvent> createState() => _AddEventState();
 }
 
 class _AddEventState extends State<AddEvent> {
+  AddEventProvider get addEventProvider =>
+      Provider.of<AddEventProvider>(context, listen: false);
   @override
   void initState() {
     super.initState();
@@ -30,11 +38,16 @@ class _AddEventState extends State<AddEvent> {
         listen: false,
       );
       eventListProvider.getEventsDataList(context);
-      final addEventProvider = Provider.of<AddEventProvider>(
-        context,
-        listen: false,
-      );
-      addEventProvider.clearData();
+      // final addEventProvider = Provider.of<AddEventProvider>(
+      //   context,
+      //   listen: false,
+      // );
+
+      if (widget.event != null) {
+        initializeEventData();
+      } else {
+        addEventProvider.clearData();
+      }
     });
   }
 
@@ -57,7 +70,9 @@ class _AddEventState extends State<AddEvent> {
           appBar: AppBar(
             centerTitle: true,
             title: Text(
-              AppLocalizations.of(context)!.create_event,
+              widget.event == null
+                  ? AppLocalizations.of(context)!.create_event
+                  : AppLocalizations.of(context)!.edit_event,
               style: AppStyles.medium20Primary,
             ),
           ),
@@ -224,12 +239,14 @@ class _AddEventState extends State<AddEvent> {
                                     ),
                                   ),
                                 ),
+
                                 Text(
                                   addEventProvider.eventLocation == null
                                       ? AppLocalizations.of(
                                         context,
                                       )!.choose_event_location
-                                      : " location {Lat: ${addEventProvider.eventLocation!.latitude.toStringAsFixed(4)}, \n Lng: ${addEventProvider.eventLocation!.longitude.toStringAsFixed(4)} }",
+                                      : '${addEventProvider.eventCity}, ${addEventProvider.eventCountry}',
+
                                   style: AppStyles.medium16Primary,
                                 ),
                                 Spacer(),
@@ -247,13 +264,56 @@ class _AddEventState extends State<AddEvent> {
 
                         // Submit Button
                         CustomElevatedButton(
-                          text: AppLocalizations.of(context)!.add_event,
+                          text:
+                              widget.event == null
+                                  ? AppLocalizations.of(context)!.add_event
+                                  : AppLocalizations.of(context)!.update_event,
                           onButtonClick: () async {
-                            await addEventProvider.updateEvent(
-                              context,
-                              eventListProvider,
-                              userProvider,
-                            );
+                            if (widget.event == null) {
+                              await addEventProvider.updateEvent(
+                                context,
+                                eventListProvider,
+                                userProvider,
+                              );
+                            } else {
+                              bool
+                              isUpdated = await EventRepository().editEvent(
+                                Event(
+                                  id: widget.event!.id,
+                                  userId: widget.event!.userId,
+                                  title: addEventProvider.titleController.text,
+                                  description:
+                                      addEventProvider
+                                          .descriptionController
+                                          .text,
+                                  date: DateTime(
+                                    addEventProvider.selectedDate!.year,
+                                    addEventProvider.selectedDate!.month,
+                                    addEventProvider.selectedDate!.day,
+                                    addEventProvider.selectedTime!.hour,
+                                    addEventProvider.selectedTime!.minute,
+                                  ),
+                                  time: addEventProvider.formatTime!,
+                                  image: addEventProvider.selectedImage,
+                                  latitude:
+                                      addEventProvider.eventLocation!.latitude,
+                                  longitude:
+                                      addEventProvider.eventLocation!.longitude,
+                                  city: addEventProvider.eventCity!,
+                                  country: addEventProvider.eventCountry!,
+                                  category:
+                                      eventListProvider
+                                          .eventsDataList[addEventProvider
+                                                  .selectedIndex +
+                                              1]
+                                          .categoryKey,
+                                ),
+                                widget.event!.userId,
+                              );
+                              if (isUpdated) {
+                                Navigator.of(context).pop();
+                              }
+                            }
                           },
                         ),
                         SizedBox(height: height * 0.02),
@@ -268,4 +328,40 @@ class _AddEventState extends State<AddEvent> {
       },
     );
   }
+
+  void initializeEventData() {
+    // حول الـ String لـ DateTime أولاً
+    DateTime parsedTime = DateFormat('h:mm a').parse(widget.event!.time);
+
+    addEventProvider.selectedIndex = addEventProvider.imageSelectedEventList
+        .indexOf(widget.event!.image);
+    addEventProvider.titleController.text = widget.event!.title;
+    addEventProvider.descriptionController.text = widget.event!.description;
+    addEventProvider.selectedDate = widget.event!.date;
+    // بعد كده حوله لـ TimeOfDay
+    addEventProvider.selectedTime = TimeOfDay.fromDateTime(parsedTime);
+    addEventProvider.formatTime = widget.event!.time;
+    addEventProvider.eventLocation = LatLng(
+      widget.event!.latitude!,
+      widget.event!.longitude!,
+    );
+    addEventProvider.eventCity = widget.event!.city;
+    addEventProvider.eventCountry = widget.event!.country;
+    // addEventProvider.userId = widget.event!.userId;
+  }
 }
+
+
+
+// addEventProvider.selectedTime = TimeOfDay(
+//       hour: widget.event!.date.hour,
+//       minute: widget.event!.date.minute,
+//     );
+//     addEventProvider.formatTime = widget.event!.time;
+
+
+
+// addEventProvider.selectedDate = widget.event!.date;
+//     addEventProvider.selectedTime = TimeOfDay.fromDateTime(widget.event!.date);
+//     addEventProvider.formatTime = widget.event!.time;
+

@@ -13,6 +13,8 @@ class Event {
   final String category;
   double? latitude;
   double? longitude;
+  final String? city;
+  final String? country;  
 
   Event({
     this.id = '',
@@ -26,6 +28,8 @@ class Event {
     required this.category,
     this.latitude,
     this.longitude,
+    this.city,
+    this.country,
   });
 
   /// ✅ Factory constructor لتحويل JSON إلى Object
@@ -44,6 +48,8 @@ class Event {
       category: json['category'] ?? '',
       latitude: json['latitude']?.toDouble(),
       longitude: json['longitude']?.toDouble(),
+      city: json['city'],
+      country: json['country'],
     );
   }
 
@@ -61,6 +67,8 @@ class Event {
       'category': category,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (city != null) 'city': city,
+      if (country != null) 'country': country,
     };
   }
 
@@ -77,6 +85,8 @@ class Event {
     String? category,
     double? latitude,
     double? longitude,
+    String? city,
+    String? country,
   }) {
     return Event(
       id: id ?? this.id,
@@ -90,66 +100,9 @@ class Event {
       category: category ?? this.category,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      city: city ?? this.city,
+      country: country ?? this.country,
     );
   }
 }
 //  ---------------------------------------------------------------------------------------------------------------
-
-// class Event {
-//   static const String collectionName = 'events';
-//    String id;
-//   final String image;
-//   final String description;
-//   final String title;
-//   final DateTime date;
-//   final String time;
-//   final String eventName;
-//    bool isFavorite;
-//   final String category;
-
-//   // final String location;
-
-//   Event({
-//     required this.eventName,
-//     this.isFavorite = false,
-//     this.id = '',
-//     required this.image,
-//     required this.description,
-//     required this.title,
-//     required this.date,
-//     required this.time,
-//     required this.category,
-//     // required this.location,
-//   });
-
-//   // todo: json => object
-//   factory Event.fromJson(Map<String, dynamic> json) {
-//     return Event(
-//       id: json['id'] ?? '',
-//       image: json['image'] ?? '',
-//       description: json['description'] ?? '',
-//       title: json['title'] ?? '',
-//       date: DateTime.fromMillisecondsSinceEpoch(json['date'] ?? 0 ),
-//       time: json['time'] ?? '',
-//       eventName: json['eventName'] ?? '',
-//       isFavorite: json['isFavorite'] ?? false,
-//       category: json['category'] ?? '',
-//       // location: json['location'] ?? '',
-//     );
-//   }
-//   // todo: object => json 
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'id': id,
-//       'image': image,
-//       'description': description,
-//       'title': title,
-//       'date': date.millisecondsSinceEpoch,
-//       'time': time,
-//       'eventName': eventName,
-//       'isFavorite': isFavorite,
-//       'category': category,
-//       // 'location': location,
-//     };
-//   }
-// }

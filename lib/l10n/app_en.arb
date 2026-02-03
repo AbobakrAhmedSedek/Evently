@@ -63,6 +63,8 @@
   "location_selected_tap_confirm": "Location selected! Tap confirm button",
   "confirm_location": "Confirm Location",
   "please_choose_location": "Please choose event location",
-  "ok": "OK"
+  "ok": "OK",
+  "event_details": "Event Details",
+  "edit_event": "Edit Event"
 
 }
