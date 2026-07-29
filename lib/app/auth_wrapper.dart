@@ -1,10 +1,9 @@
-
+import 'package:evently/app/authenticated_shell.dart';
 import 'package:evently/data/repositories/user_repository.dart';
 import 'package:evently/domain/model/my_user.dart';
 import 'package:evently/providers/event_list_provider.dart';
 import 'package:evently/providers/user_provider.dart';
 import 'package:evently/ui/authentication/login/login_screen.dart';
-import 'package:evently/ui/home/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -35,22 +34,19 @@ class AuthWrapper extends StatelessWidget {
 
   /// شاشة التحميل
   Widget _buildLoadingScreen() {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 
   /// واجهة المستخدم المسجل
   Widget _buildAuthenticatedView(BuildContext context, User user) {
     _loadUserData(context, user);
-    return const HomeScreen();
+    return const AuthenticatedShell();
   }
 
   /// واجهة المستخدم غير المسجل
   Widget _buildUnauthenticatedView(BuildContext context) {
     _handleLogout(context);
+
     return const LoginScreen();
   }
 
@@ -58,7 +54,10 @@ class AuthWrapper extends StatelessWidget {
   void _loadUserData(BuildContext context, User user) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final eventListProvider = Provider.of<EventListProvider>(context, listen: false);
+      // final eventListProvider = Provider.of<EventListProvider>(
+      //   context,
+      //   listen: false,
+      // );
 
       // تجنب إعادة التحميل إذا كان المستخدم نفسه
       if (userProvider.user?.id == user.uid) {
@@ -74,8 +73,8 @@ class AuthWrapper extends StatelessWidget {
           userProvider.updateUser(userData);
 
           // تحميل الأحداث الخاصة بالمستخدم
-          eventListProvider.clearEvents();
-          eventListProvider.getAllEvents(userData.id);
+          // eventListProvider.clearEvents();
+          // eventListProvider.getAllEvents(userData.id);
         } else {
           // معالجة حالة عدم وجود بيانات
           debugPrint('⚠️ لم يتم العثور على بيانات المستخدم: ${user.uid}');
@@ -95,5 +94,3 @@ class AuthWrapper extends StatelessWidget {
     });
   }
 }
-
-

@@ -1,5 +1,3 @@
-
-import 'package:evently/data/repositories/event_repository.dart';
 import 'package:evently/domain/model/event.dart';
 import 'package:evently/providers/add_event_provider.dart';
 import 'package:evently/providers/event_list_provider.dart';
@@ -17,6 +15,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:evently/ui/home/tabs/home_tab/cubit/events/event_cubit.dart';
 
 class AddEvent extends StatefulWidget {
   static const routeName = "add_event";
@@ -276,8 +275,7 @@ class _AddEventState extends State<AddEvent> {
                                 userProvider,
                               );
                             } else {
-                              bool
-                              isUpdated = await EventRepository().editEvent(
+                             await  context.read<EventCubit>().editEvent(
                                 Event(
                                   id: widget.event!.id,
                                   userId: widget.event!.userId,
@@ -308,11 +306,10 @@ class _AddEventState extends State<AddEvent> {
                                               1]
                                           .categoryKey,
                                 ),
-                                widget.event!.userId,
                               );
-                              if (isUpdated) {
+                            
                                 Navigator.of(context).pop();
-                              }
+                              
                             }
                           },
                         ),

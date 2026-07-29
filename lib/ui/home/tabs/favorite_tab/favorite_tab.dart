@@ -1,13 +1,17 @@
-import 'package:evently/providers/event_list_provider.dart';
+import 'package:evently/domain/model/event.dart';
+import 'package:evently/domain/model/my_user.dart';
 import 'package:evently/providers/user_provider.dart';
-import 'package:evently/ui/home/create_event/add_event.dart';
-import 'package:evently/ui/home/tabs/home_tab/widgets/event_item.dart';
+import 'package:evently/ui/home/tabs/favorite_tab/cubit/favorite_action.dart';
+import 'package:evently/ui/home/tabs/favorite_tab/cubit/favorite_cubit.dart';
+import 'package:evently/ui/home/tabs/favorite_tab/cubit/favorite_state.dart';
+import 'package:evently/ui/home/tabs/home_tab/widgets/event_item_widget.dart';
 import 'package:evently/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:evently/utils/assets_manager.dart';
 import 'package:evently/utils/app_styles.dart';
-import 'package:provider/provider.dart';
+import 'dart:async';
 
 class FavoriteTab extends StatefulWidget {
   const FavoriteTab({super.key});
@@ -18,166 +22,52 @@ class FavoriteTab extends StatefulWidget {
 
 class _FavoriteTabState extends State<FavoriteTab> {
   final ScrollController _scrollController = ScrollController();
-  bool _isLoading = false;
-  bool _hasLoadedOnce = false;
-  String? _lastUserId;
-  UserProvider? _userProvider;
-  
+  late final StreamSubscription<FavoriteAction> _actionSubscription;
+  @override
+  void dispose() {
+    _actionSubscription.cancel();
+
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // ✅ إضافة listener مرة واحدة فقط
-      if (_userProvider == null) {
-        _userProvider = Provider.of<UserProvider>(context, listen: false);
 
-        // ✅ استمع للتغييرات
-        _userProvider!.addListener(_onUserChanged);
-
-        // ✅ تحقق من الحالة الحالية
-        _onUserChanged();
-      }
-    });
-  }
-
-
-  // ✅ دالة منفصلة للتعامل مع تغيير User
-  void _onUserChanged() {
-    final user = _userProvider?.user;
-
-    print('👤 User changed: ${user?.id ?? "null"}');
-
-    if (user != null &&
-        !_hasLoadedOnce &&
-        !_isLoading &&
-        _lastUserId != user.id) {
-      print('✅ Loading favorites...');
-WidgetsBinding.instance.addPostFrameCallback((_) {
-        _loadFavorites();
-      });
-    }
-  }
-
-  Future<void> _loadFavorites() async {
-    print('🔄 _loadFavorites() called');
-
-    final eventListProvider = Provider.of<EventListProvider>(
-      context,
-      listen: false,
-    );
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    // ✅ Double check
-    if (userProvider.user == null) {
-      print('❌ User is null, aborting');
-      return;
-    }
-
-    if (_isLoading) {
-      print('⚠️ Already loading, skipping');
-      return;
-    }
-
-    // ✅ تسجيل userId
-    _lastUserId = userProvider.user!.id;
-
-    setState(() => _isLoading = true);
-
-    try {
-      print('📡 Fetching favorites for: ${userProvider.user!.id}');
-
-      // ✅ التحميل
-      await eventListProvider.getAllFavoriteEvents(userProvider.user!.id);
-
-      print(
-        '✅ Favorites loaded: ${eventListProvider.favoriteEventsList.length} events',
+    _actionSubscription = context.read<FavoriteCubit>().actions.listen((
+      action,
+    ) {
+      action.when(
+        updateFavoriteFailed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update favorite')),
+          );
+        },
       );
-
-      // ✅ تسجيل نجاح التحميل
-      _hasLoadedOnce = true;
-    } catch (e) {
-      print('❌ Error loading favorites: $e');
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load favorites'),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: 'Retry',
-              textColor: Colors.white,
-              onPressed: () {
-                setState(() {
-                  _hasLoadedOnce = false;
-                  _lastUserId = null;
-                });
-                _loadFavorites();
-              },
-            ),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    // ✅ مهم جدًا! إزالة الـ listener
-    _userProvider?.removeListener(_onUserChanged);
-    _scrollController.dispose();
-    super.dispose();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
+    final user = context.select<UserProvider, MyUser?>((p) => p.user);
+    debugPrint("FavoriteTab build");
+    return BlocBuilder<FavoriteCubit, FavoriteState>(
+      
+      builder: (context, state) {
+        debugPrint("BlocBuilder build");
+        debugPrint("🔄 FavoriteTab Rebuild");
 
-    return Consumer2<EventListProvider, UserProvider>(
-      builder: (context, eventProvider, userProvider, child) {
-        print(
-          '🎨 Building UI - User: ${userProvider.user?.id ?? "null"}, '
-          'Favorites: ${eventProvider.favoriteEventsList.length}, '
-          'Loading: $_isLoading',
+        final events = state.when(
+          initial: () => [],
+          loading: () => [],
+          success: (events) => events,
+          error: (message) => [],
         );
 
-        // ✅ إذا User null، عرض Loading
-        if (userProvider.user == null) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(color: AppColors.primaryLight),
-                SizedBox(height: 16),
-                Text(
-                  'Loading user data...',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          );
-        }
-
-        // ✅ عرض Loading أثناء التحميل
-        if (_isLoading) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(color: AppColors.primaryLight),
-                SizedBox(height: 16),
-                Text(
-                  'Loading favorites...',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          );
-        }
+        debugPrint("UI Events Count: ${events.length}");
 
         return Scaffold(
           body: SafeArea(
@@ -242,7 +132,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                   // قائمة الأحداث
                   SliverList(
                     delegate:
-                        eventProvider.favoriteEventsList.isEmpty
+                        events.isEmpty
                             ? SliverChildListDelegate([
                               Center(
                                 child: Padding(
@@ -272,36 +162,21 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                                         textAlign: TextAlign.center,
                                       ),
                                       SizedBox(height: 24),
-                                      ElevatedButton.icon(
-                                        onPressed: () {
-                                          setState(() {
-                                            _hasLoadedOnce = false;
-                                            // _lastUserId = null;
-                                          });
-                                          _onUserChanged();
-                                        },
-                                        icon: Icon(Icons.refresh),
-                                        label: Text('Reload'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              AppColors.primaryLight,
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),
                               ),
                             ])
-                            : SliverChildBuilderDelegate(
-                              (context, index) {
-                                return EventItem(
-                                  event:
-                                      eventProvider.favoriteEventsList[index],
-                                );
-                              },
-                              childCount:
-                                  eventProvider.favoriteEventsList.length,
-                            ),
+                            : SliverChildBuilderDelegate((context, index) {
+                              return EventItem(
+                                event: events[index],
+                                onFavoritePressed: (Event value) {
+                                  context
+                                      .read<FavoriteCubit>()
+                                      .updateIsFavoriteEvents(value, user!.id);
+                                },
+                              );
+                            }, childCount: events.length),
                   ),
                 ],
               ),

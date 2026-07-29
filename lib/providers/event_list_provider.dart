@@ -1,6 +1,6 @@
 import 'package:evently/data/repositories/event_repository.dart';
 import 'package:evently/domain/model/event.dart';
-import 'package:evently/ui/home/tabs/home_tab/models/event_data_model.dart';
+import 'package:evently/ui/home/create_event/model/event_data_model.dart';
 import 'package:evently/utils/toast_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -105,7 +105,7 @@ class EventListProvider with ChangeNotifier {
   Future<void> getAllFavoriteEvents(String userId) async {
     try {
       // ✅ يمكن استخدام query مخصص أو فلترة محلية
-      //    
+      //
       final allEvents = await _eventRepository.getAllEvents(userId);
       favoriteEventsList = allEvents.where((e) => e.isFavorite).toList();
       favoriteEventsList.sort((a, b) => a.date.compareTo(b.date));
@@ -188,7 +188,7 @@ class EventListProvider with ChangeNotifier {
   // ============================================
   // ✍️ Create & Update
   // ============================================
-  
+
   // ✅ إضافة هذه الدالة في EventListProvider
   /// تحديث القوائم من Firebase Snapshot
   void updateEventsFromSnapshot(QuerySnapshot<Event> snapshot) {
@@ -205,8 +205,7 @@ class EventListProvider with ChangeNotifier {
           return e.copyWith(id: doc.id);
         }).toList();
 
-         getFilterEvents();
-
+    getFilterEvents();
   }
 
   ///   إضافة حدث جديد الى Firebase
@@ -347,8 +346,8 @@ class EventListProvider with ChangeNotifier {
   // ============================================
 
   /// مسح جميع البيانات المحلية
-  void clearEvents()  {
-     eventsList.clear();
+  void clearEvents() {
+    eventsList.clear();
     eventsFiltered.clear();
     favoriteEventsList.clear();
     selectedIndex = 0;
@@ -379,6 +378,4 @@ class EventListProvider with ChangeNotifier {
     if (selectedIndex == 0) return 'all';
     return eventsDataList[selectedIndex].categoryKey;
   }
-
 }
-

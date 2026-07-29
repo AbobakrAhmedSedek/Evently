@@ -39,7 +39,6 @@ class _LoginScreenState extends State<LoginScreen> implements LoginNavigator {
 
   @override
   void dispose() {
-  
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -52,179 +51,185 @@ class _LoginScreenState extends State<LoginScreen> implements LoginNavigator {
 
     return ChangeNotifierProvider(
       create: (context) => viewModel,
-      builder: (context, child){ return Scaffold(
-        body: Stack(
-          children: [
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        Image.asset(AssetsManager.logoTop),
-                        SizedBox(height: height * 0.02),
+      builder: (context, child) {
+        return Scaffold(
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Image.asset(AssetsManager.logoTop),
+                          SizedBox(height: height * 0.02),
 
-                        // Email Field
-                        CustomTextField(
-                          textInputType: TextInputType.emailAddress,
-                          prefixIcon: Image.asset(AssetsManager.iconEmail),
-                          hintText: AppLocalizations.of(context)!.email,
-                          controller: _emailController,
-                          validator: _validateEmail,
-                        ),
-                        SizedBox(height: height * 0.02),
+                          // Email Field
+                          CustomTextField(
+                            textInputType: TextInputType.emailAddress,
+                            prefixIcon: Image.asset(AssetsManager.iconEmail),
+                            hintText: AppLocalizations.of(context)!.email,
+                            controller: _emailController,
+                            validator: _validateEmail,
+                          ),
+                          SizedBox(height: height * 0.02),
 
-                        // Password Field
-                        CustomTextField(
-                          obscureText: true,
-                          obscuringCharacter: '•',
-                          textInputType: TextInputType.visiblePassword,
-                          controller: _passwordController,
-                          validator: _validatePassword,
-                          prefixIcon: Image.asset(AssetsManager.iconLock),
-                          hintText: AppLocalizations.of(context)!.password,
-                          suffixIcon: Image.asset(AssetsManager.iconPassword),
-                        ),
+                          // Password Field
+                          CustomTextField(
+                            obscureText: true,
+                            obscuringCharacter: '•',
+                            textInputType: TextInputType.visiblePassword,
+                            controller: _passwordController,
+                            validator: _validatePassword,
+                            prefixIcon: Image.asset(AssetsManager.iconLock),
+                            hintText: AppLocalizations.of(context)!.password,
+                            suffixIcon: Image.asset(AssetsManager.iconPassword),
+                          ),
 
-                        // Forget Password
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            CustomTextButton(
-                              text:
-                                  AppLocalizations.of(context)!.forget_password,
-                              onPressed: () {
-                                // TODO: Implement forgot password
-                              },
-                            ),
-                          ],
-                        ),
+                          // Forget Password
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              CustomTextButton(
+                                text:
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.forget_password,
+                                onPressed: () {
+                                  // TODO: Implement forgot password
+                                },
+                              ),
+                            ],
+                          ),
 
-                        SizedBox(height: height * 0.02),
+                          SizedBox(height: height * 0.02),
 
-                        // Login Button
-                        CustomElevatedButton(
-                          onButtonClick: _loginWithEmail,
-                          text: AppLocalizations.of(context)!.login,
-                        ),
+                          // Login Button
+                          CustomElevatedButton(
+                            onButtonClick: _loginWithEmail,
+                            text: AppLocalizations.of(context)!.login,
+                          ),
 
-                        SizedBox(height: height * 0.02),
+                          SizedBox(height: height * 0.02),
 
-                        // Create Account Link
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.do_not_have_an_account,
-                              style: AppStyles.medium16Black,
-                            ),
-                            CustomTextButton(
-                              onPressed: () {
-                                Navigator.of(
+                          // Create Account Link
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                AppLocalizations.of(
                                   context,
-                                ).pushNamed(RegisterScreen.routeName);
-                              },
-                              text:
-                                  AppLocalizations.of(context)!.create_account,
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: height * 0.01),
-
-                        // Divider with "OR"
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Divider(
-                                thickness: 2,
-                                color: AppColors.primaryLight,
-                                indent: width * 0.02,
-                                endIndent: width * 0.02,
+                                )!.do_not_have_an_account,
+                                style: AppStyles.medium16Black,
                               ),
-                            ),
-                            Text(
-                              AppLocalizations.of(context)!.or,
-                              style: AppStyles.medium16Primary,
-                            ),
-                            Expanded(
-                              child: Divider(
-                                thickness: 2,
-                                color: AppColors.primaryLight,
-                                indent: width * 0.02,
-                                endIndent: width * 0.02,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: height * 0.03),
-
-                        // Google Sign-In Button
-                        InkWell(
-                          onTap: _loginWithGoogle,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.primaryLight),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: width * 0.05,
-                              vertical: height * 0.015,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(AssetsManager.iconGoogle),
-                                SizedBox(width: width * 0.04),
-                                Text(
-                                  AppLocalizations.of(
+                              CustomTextButton(
+                                onPressed: () {
+                                  Navigator.of(
                                     context,
-                                  )!.login_with_google,
-                                  style: AppStyles.medium20Primary,
+                                  ).pushNamed(RegisterScreen.routeName);
+                                },
+                                text:
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.create_account,
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: height * 0.01),
+
+                          // Divider with "OR"
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  thickness: 2,
+                                  color: AppColors.primaryLight,
+                                  indent: width * 0.02,
+                                  endIndent: width * 0.02,
                                 ),
-                              ],
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.or,
+                                style: AppStyles.medium16Primary,
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  thickness: 2,
+                                  color: AppColors.primaryLight,
+                                  indent: width * 0.02,
+                                  endIndent: width * 0.02,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: height * 0.03),
+
+                          // Google Sign-In Button
+                          InkWell(
+                            onTap: _loginWithGoogle,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: AppColors.primaryLight,
+                                ),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: width * 0.05,
+                                vertical: height * 0.015,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(AssetsManager.iconGoogle),
+                                  SizedBox(width: width * 0.04),
+                                  Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.login_with_google,
+                                    style: AppStyles.medium20Primary,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Loading Overlay
-            if (Provider.of<LoginScreenViewModel>(context).isLoading)
-              Container(
-                color: Colors.black54,
-                child: const Center(
-                  child: Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(width: 20),
-                          Text("Logging in..."),
                         ],
                       ),
                     ),
                   ),
                 ),
               ),
-          ],
-        ),
-      );  
-    }); 
-  
-  }
 
+              // Loading Overlay
+              if (Provider.of<LoginScreenViewModel>(context).isLoading)
+                Container(
+                  color: Colors.black54,
+                  child: const Center(
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(width: 20),
+                            Text("Logging in..."),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   // ============================================
   // 🔐 Validation Methods
