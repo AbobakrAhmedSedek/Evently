@@ -1,13 +1,15 @@
-
 // ═══════════════════════════════════════════════════════════
 // 📄 map_tab.dart
 // ═══════════════════════════════════════════════════════════
 
 import 'package:evently/domain/model/event.dart';
 import 'package:evently/providers/maps_tab_provider.dart';
+import 'package:evently/ui/home/tabs/home_tab/cubit/location/location_cubit.dart';
+import 'package:evently/ui/home/tabs/home_tab/cubit/location/location_state.dart';
 import 'package:evently/ui/home/tabs/map_tab/widgets/event_card_item.dart';
 import 'package:evently/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,11 +25,13 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
   late MapsTabProvider provider;
+  GoogleMapController? controller;
+  LatLng? lastLocation;
   @override
   void initState() {
     super.initState();
     _setupRealtimeListener();
-    _initializeMapLocation(); // ✅✅✅ إضافة: جلب الموقع تلقائيًا
+    // _initializeMapLocation(); // ✅✅✅ إضافة: جلب الموقع تلقائيًا
   }
 
   void _setupRealtimeListener() {
@@ -43,44 +47,70 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin {
       }
     });
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     provider = Provider.of<MapsTabProvider>(context, listen: false);
   }
 
-
   // ✅✅✅ إضافة جديدة: دالة لجلب الموقع عند تحميل الـ Tab
-  void _initializeMapLocation() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      MapsTabProvider provider = Provider.of<MapsTabProvider>(
-        context,
-        listen: false,
-      );
+  // void _initializeMapLocation() {
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     MapsTabProvider provider = Provider.of<MapsTabProvider>(
+  //       context,
+  //       listen: false,
+  //     );
 
-      // استخدام نفس دالة الـ FAB لجلب الموقع وتحديث الخريطة
-      provider.floatingActionButtonLocation();
-    });
-  }
+  //     // استخدام نفس دالة الـ FAB لجلب الموقع وتحديث الخريطة
+  //     provider.floatingActionButtonLocation();
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    // MapsTabProvider provider = Provider.of<MapsTabProvider>(context);
+    MapsTabProvider provider = Provider.of<MapsTabProvider>(context);
     var height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: Stack(
         children: [
           // الخريطة
-          GoogleMap(
-            initialCameraPosition: provider.cameraPosition,
-            onMapCreated: (GoogleMapController controller) {
-              provider.mapController = controller;
+          BlocListener<LocationCubit, LocationState>(
+            listener: (context, state) {
+              if (state is LocationSuccess) {
+                lastLocation = state.latLng;
+                if (controller != null) {
+                  controller!.animateCamera(
+                    CameraUpdate.newCameraPosition(
+                      CameraPosition(target: lastLocation!, zoom: 15),
+                    ),
+                  );
+                }
+              }
             },
-            mapType: MapType.normal,
-            markers: provider.markers,
-            zoomControlsEnabled: false,
+            child: GoogleMap(
+              initialCameraPosition: provider.cameraPosition,
+              // const CameraPosition(
+              //   target: LatLng(30.0444, 31.2357),
+              //   zoom: 15,
+              // ),
+              onMapCreated: (GoogleMapController c) {
+                controller = c;
+                 provider.mapController = c;
+                if (lastLocation != null) {
+                  controller!.animateCamera(
+                    CameraUpdate.newCameraPosition(
+                      CameraPosition(target: lastLocation!, zoom: 15),
+                    ),
+                  );
+                }
+              },
+              mapType: MapType.normal,
+              markers: provider.markers,
+              zoomControlsEnabled: false,
+            ),
           ),
 
           // الـ ListView أسفل الشاشة بارتفاع ثابت
@@ -169,8 +199,8 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin {
                   // عرض قائمة الأحداث
                   return ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 16),
+                    separatorBuilder:
+                        (context, index) => const SizedBox(width: 16),
                     scrollDirection: Axis.horizontal,
                     itemCount: events.length,
                     itemBuilder: (context, index) {
@@ -180,7 +210,9 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin {
                           provider.convertLatlangAndSetLocation(
                             LatLng(event.latitude!, event.longitude!),
                             event.title,
+                            
                           );
+                        
                         },
                         child: EventCardItem(event: events[index]),
                       );
@@ -192,12 +224,14 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin {
           ),
         ],
       ),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(top: 50),
         child: FloatingActionButton(
           onPressed: () {
-            provider.floatingActionButtonLocation();
+            // provider.floatingActionButtonLocation();
+            context.read<LocationCubit>().getCurrentLocation();
           },
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -209,10 +243,11 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin {
       ),
     );
   }
+
   @override
   void dispose() {
-  provider.cancelSubscription(); // ✅
-  print("🟣 MapTab dispose() called!"); 
+    provider.cancelSubscription(); // ✅
+    print("🟣 MapTab dispose() called!");
     super.dispose();
   }
 }

@@ -1,30 +1,30 @@
 import 'package:evently/domain/model/event.dart';
-import 'package:evently/providers/event_list_provider.dart';
-import 'package:evently/providers/user_provider.dart';
 import 'package:evently/ui/home/event_details/event_details_screen.dart';
 import 'package:evently/utils/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-
 import '../../../../../utils/app_colors.dart';
 import '../../../../../utils/assets_manager.dart';
 
 class EventItem extends StatelessWidget {
   final Event event;
-  const EventItem({super.key, required this.event});
+  final ValueChanged<Event> onFavoritePressed;
+  const EventItem({
+    super.key,
+    required this.event,
+    required this.onFavoritePressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-     var userProvider = Provider.of<UserProvider>(context);
     return InkWell(
       onTap: () {
-        Navigator.of(context).pushNamed(
-          EventDetailsScreen.routeName,
-          arguments: event,
-        );
+        Navigator.of(
+          context,
+        ).pushNamed(EventDetailsScreen.routeName, arguments: event.id);
+
       },
       child: Container(
         height: height * 0.25,
@@ -37,7 +37,7 @@ class EventItem extends StatelessWidget {
           border: Border.all(color: AppColors.primaryLight),
           borderRadius: BorderRadius.circular(20),
           image: DecorationImage(
-            image: AssetImage( event.image),
+            image: AssetImage(event.image),
             fit: BoxFit.cover,
           ),
         ),
@@ -55,13 +55,19 @@ class EventItem extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Text(event.date.day.toString(), style: AppStyles.bold20Primary),
-                  Text(DateFormat.MMM().format(event.date), style: AppStyles.bold16Primary),
+                  Text(
+                    event.date.day.toString(),
+                    style: AppStyles.bold20Primary,
+                  ),
+                  Text(
+                    DateFormat.MMM().format(event.date),
+                    style: AppStyles.bold16Primary,
+                  ),
                 ],
               ),
             ),
             Spacer(),
-      
+
             Container(
               // height: height * 0.05,
               margin: EdgeInsets.all(10),
@@ -75,17 +81,12 @@ class EventItem extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      event.title,
-                      style: AppStyles.bold14Black,
-                    ),
+                    child: Text(event.title, style: AppStyles.bold14Black),
                   ),
                   Spacer(),
                   IconButton(
-                    onPressed: ( ) {
-                    
-                      Provider.of<EventListProvider>(context, listen: false)
-                          .updateIsFavoriteEvents(event, context  , userProvider.user!.id );
+                    onPressed: () {
+                      onFavoritePressed(event);
                     },
                     icon: Image.asset(
                       event.isFavorite == true

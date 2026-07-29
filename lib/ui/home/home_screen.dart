@@ -1,16 +1,17 @@
-// import 'package:evently/providers/add_event_provider.dart';
-// import 'package:evently/providers/maps_tab_provider.dart';
 import 'package:evently/ui/home/tabs/favorite_tab/favorite_tab.dart';
-import 'package:evently/ui/home/tabs/home_tab/home_tab.dart';
+import 'package:evently/ui/home/tabs/home_tab/cubit/events/event_cubit.dart';
 import 'package:evently/ui/home/tabs/map_tab/map_tab.dart';
 import 'package:evently/ui/home/tabs/profile_tab/profile_tab.dart'; // ✅ تعديل هنا
 import 'package:evently/ui/home/create_event/add_event.dart';
 import 'package:evently/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 // import 'package:provider/provider.dart';
 import '../../../utils/assets_manager.dart';
 import 'dart:math' as math; // ✅ إضافة هنا
+
+import 'tabs/home_tab/home_tab.dart';
 
 // ✅ CustomClipper لعمل الـ notch
 // class NotchClipper extends CustomClipper<Path> {
@@ -105,25 +106,47 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
   late final List<Widget> pages;
-  // late AddEventProvider addEventProvider;
-
+  // late LocationCubit locationCubit;
+  bool _isListeningStarted = false;
   @override
   void initState() {
     super.initState();
     pages = [HomeTab(), MapTab(), FavoriteTab(), ProfileTab()];
+
+    // locationCubit = LocationCubit(LocationRepositoryImpl());
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   locationCubit.getCurrentLocation();
+    // });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies(); 
+
+    if (!_isListeningStarted) {
+      _isListeningStarted = true;
+      context.read<EventCubit>().listenToEvents();
+      print(' listenToEvents called ✅✅✅');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // MapsTabProvider provider = Provider.of<MapsTabProvider>(context);
 
-    return Scaffold(
-      extendBody: true,
-      body: IndexedStack(index: selectedIndex, children: pages),
-      bottomNavigationBar: _buildClippedBottomBar(),
-      floatingActionButton: _buildCustomFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    );
+    return 
+    // MultiBlocProvider(
+    //   providers: [BlocProvider.value(value: locationCubit)],
+    //   child:
+       Scaffold(
+        extendBody: true,
+        body: IndexedStack(index: selectedIndex, children: pages),
+        bottomNavigationBar: _buildClippedBottomBar(),
+        floatingActionButton: _buildCustomFAB(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      );
+    // );
   }
 
   Widget _buildClippedBottomBar() {
@@ -273,157 +296,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-
-
-//todo: old code
-// import 'package:evently/ui/home/tabs/favorite_tab/favorite_tab.dart';
-// import 'package:evently/ui/home/tabs/home_tab/home_tab.dart';
-// import 'package:evently/ui/home/tabs/map_tab/map_tab.dart';
-// import 'package:evently/ui/home/tabs/profile_tab/profile_Tab.dart';
-// import 'package:evently/utils/app_colors.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-// import '../../../utils/assets_manager.dart';
-//
-// class HomeScreen extends StatefulWidget {
-//   static const routeName = '/';
-//
-//   const HomeScreen({super.key});
-//
-//   @override
-//   State<HomeScreen> createState() => _HomeScreenState();
-// }
-//
-// class _HomeScreenState extends State<HomeScreen> {
-//   int selectedIndex = 0;
-//   List<Widget> pages = [
-//     HomeTab(),
-//     MapTab(),
-//     FavoriteTab(),
-//     ProfileTab(),
-//   ];
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       // ✅ إضافة extendBody عشان الـ body يمتد وراء الـ bottom bar
-//       extendBody: true,
-//
-//       bottomNavigationBar: BottomAppBar(
-//         shape: const CircularNotchedRectangle(),
-//         notchMargin: 10.0, // ✅ زيادة المسافة للـ notch الشفاف
-//         color: Theme.of(context).primaryColor,
-//         elevation: 10, // ✅ إضافة shadow
-//         child: Container(
-//           height: 65, // ✅ تحديد ارتفاع واضح
-//           padding: EdgeInsets.symmetric(horizontal: 20), // ✅ إضافة padding
-//           child: Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//             children: [
-//               buildNavIcon(
-//                 index: 0,
-//                 selectedIcon: AssetsManager.iconHomeSelected,
-//                 unSelectedIcon: AssetsManager.iconHome,
-//                 label: AppLocalizations.of(context)!.home,
-//               ),
-//               buildNavIcon(
-//                 index: 1,
-//                 selectedIcon: AssetsManager.iconMapSelected,
-//                 unSelectedIcon: AssetsManager.iconMap,
-//                 label: AppLocalizations.of(context)!.map,
-//               ),
-//               // ✅ مساحة أكبر للـ FAB
-//               const SizedBox(width: 50),
-//               buildNavIcon(
-//                 index: 2,
-//                 selectedIcon: AssetsManager.iconFavoriteSelected,
-//                 unSelectedIcon: AssetsManager.iconFavorite,
-//                 label: AppLocalizations.of(context)!.favorite,
-//               ),
-//               buildNavIcon(
-//                 index: 3,
-//                 selectedIcon: AssetsManager.iconProfileSelected,
-//                 unSelectedIcon: AssetsManager.iconProfile,
-//                 label: AppLocalizations.of(context)!.profile,
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//
-//       // ✅ تحسين الـ FloatingActionButton
-//       floatingActionButton: Container(
-//         width: 60,
-//         height: 60,
-//         decoration: BoxDecoration(
-//           shape: BoxShape.circle,
-//           boxShadow: [
-//             BoxShadow(
-//               color: Colors.black26,
-//               blurRadius: 8,
-//               offset: Offset(0, 4),
-//             ),
-//           ],
-//         ),
-//         child: FloatingActionButton(
-//           onPressed: () {
-//             // ✅ إضافة الإجراء المطلوب هنا
-//           },
-//           backgroundColor: Theme.of(context).primaryColor,
-//           elevation: 0, // لأننا عملنا shadow في الـ Container
-//           child: const Icon(Icons.add, color: AppColors.whiteColor, size: 32),
-//         ),
-//       ),
-//       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-//       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-//
-//       body: pages[selectedIndex],
-//     );
-//   }
-//
-//   Widget buildNavIcon({
-//     required int index,
-//     required String selectedIcon,
-//     required String unSelectedIcon,
-//     required String label,
-//   }) {
-//     final isDark = Theme.of(context).brightness == Brightness.dark;
-//     final iconColor = isDark ? Colors.black : Colors.white;
-//     final isSelected = selectedIndex == index;
-//
-//     return GestureDetector(
-//       onTap: () => setState(() => selectedIndex = index),
-//       child: Container(
-//         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-//         child: Column(
-//           mainAxisSize: MainAxisSize.min,
-//           children: [
-//             // ✅ إضافة تأثير حركي للأيقونة المحددة
-//             AnimatedContainer(
-//               duration: Duration(milliseconds: 200),
-//               transform: Matrix4.translationValues(0, isSelected ? -3 : 0, 0),
-//               child: ImageIcon(
-//                 AssetImage(isSelected ? selectedIcon : unSelectedIcon),
-//                 color: isSelected ? iconColor : iconColor.withOpacity(0.7),
-//                 size: 28,
-//               ),
-//             ),
-//             SizedBox(height: 4),
-//             Text(
-//               label,
-//               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-//                 fontSize: 12,
-//                 color: isSelected
-//                     ? AppColors.whiteColor
-//                     : AppColors.whiteColor.withOpacity(0.7),
-//                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-

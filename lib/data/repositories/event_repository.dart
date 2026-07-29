@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:evently/domain/model/event.dart';
 import 'package:evently/domain/model/my_user.dart';
-import 'package:evently/ui/home/home_screen.dart';
 import 'package:evently/utils/toast_utils.dart';
 import 'package:flutter/material.dart';
 
